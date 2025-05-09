@@ -14,6 +14,8 @@ use App\Http\Controllers\ComunionController;
 use App\Http\Controllers\ConfirmacionController;
 use App\Http\Controllers\MatrimonioController;
 use App\Http\Controllers\SacramentoController;
+use App\Http\Controllers\IngresoController;
+use App\Http\Controllers\EgresoController;  
 use App\Http\Controllers\FinanzasController;
 
 use App\Http\Middleware\CheckSession;
@@ -43,21 +45,15 @@ Route::middleware([CheckSession::class])->group(function () {
         Route::resource('/usuarios', UsuarioController::class);
         Route::resource('/rrhh', RrhhController::class);
         //finanzass
-        Route::get('/finanzas', [FinanzasController::class, 'index'])->name('finanzas.index');
-        Route::get('/finanzas/ingreso/create', [FinanzasController::class, 'createIngreso'])->name('finanzas.create_ingreso');
-        Route::post('/finanzas/ingreso', [FinanzasController::class, 'storeIngreso'])->name('finanzas.store_ingreso');
-        Route::get('/finanzas/ingreso/{id}', [FinanzasController::class, 'showIngreso'])->name('finanzas.show_ingreso');
-        Route::get('/finanzas/ingreso/{id}/edit', [FinanzasController::class, 'editIngreso'])->name('finanzas.edit_ingreso');
-        Route::put('/finanzas/ingreso/{id}', [FinanzasController::class, 'updateIngreso'])->name('finanzas.update_ingreso');
-        Route::delete('/finanzas/ingreso/{id}', [FinanzasController::class, 'destroyIngreso'])->name('finanzas.destroy_ingreso');
+        Route::resource('ingresos', IngresoController::class);
+        Route::resource('egresos', EgresoController::class);
+        
 
-        Route::get('/finanzas/egreso/create', [FinanzasController::class, 'createEgreso'])->name('finanzas.create_egreso');
-        Route::post('/finanzas/egreso', [FinanzasController::class, 'storeEgreso'])->name('finanzas.store_egreso');
-        Route::get('/finanzas/egreso/{id}', [FinanzasController::class, 'showEgreso'])->name('finanzas.show_egreso');
-        Route::get('/finanzas/egreso/{id}/edit', [FinanzasController::class, 'editEgreso'])->name('finanzas.edit_egreso');
-        Route::put('/finanzas/egreso/{id}', [FinanzasController::class, 'updateEgreso'])->name('finanzas.update_egreso');
-        Route::delete('/finanzas/egreso/{id}', [FinanzasController::class, 'destroyEgreso'])->name('finanzas.destroy_egreso');
-    });
+        Route::resource('finanzas', FinanzasController::class);
+
+        Route::resource('sacramentos', SacramentoController::class);
+
+    }); 
 
     // ✅ Rutas solo para SECRETARIO
     Route::middleware([SecretarioMiddleware::class])->group(function () {

@@ -3,111 +3,104 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Misa;
-use App\Models\Sacerdote;
+use App\Models\Sacramento;
+use App\Models\Bautizo;
+use App\Models\PrimeraComunion;
+use App\Models\Confirmacion;
+use App\Models\Matrimonio;
 
-class MisaController extends Controller
+class SacramentoController extends Controller
 {
     public function index()
     {
-        $misas = Misa::with('sacerdote')->orderBy('fecha', 'desc')->get();
-        return view('misas.index', compact('misas'));
+        $sacramentos = Sacramento::orderBy('fecha', 'desc')->get();
+        return view('sacramentos.index', compact('sacramentos'));
     }
 
     public function create()
     {
-        $sacerdotes = Sacerdote::all();
-        return view('misas.create', compact('sacerdotes'));
+        return view('sacramentos.create');
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'fecha' => 'required|date',
-            'hora' => 'required',
-            'tipo_misa' => 'required|string|max:100',
-            'intencion' => 'nullable|string',
-            'id_sacerdote' => 'nullable|exists:sacerdotes,id_sacerdote',
-            'observaciones' => 'nullable|string',
-            'estado' => 'required|in:programada,celebrada,cancelada',
+            'tipo_sacramento'    => 'required|in:bautizo,comunion,confirmacion,matrimonio',
+            'fecha'              => 'required|date',
+            'hora'               => 'required',
+            'lugar'              => 'required|string|max:100',
+            'nombre_receptor'    => 'required|string|max:100',
+            'apellido_paterno'   => 'required|string|max:100',
+            'apellido_materno'   => 'nullable|string|max:100',
+            'fecha_nacimiento'   => 'nullable|date',
+            'sexo'               => 'required|in:M,F'
         ]);
 
-        // Asignación automática de estipendio según el tipo de misa
-        $estipendios = [
-            'MISA DE DIFUNTOS COMUNITARIAS' => 20,
-            'MISA DE CUERPO PRESENTE' => 100,
-            'MISA DE SALUD Y OTRAS PETICIONES' => 100,
-            'MISA DE DEVOCION' => 350,
-            'MISA DE FIESTA (preste folclorico)' => 500,
-            'MISA DE ANIVERSARIO MATRIMONIAL' => 200,
-        ];
-
-        $tipo = strtoupper(trim($request->tipo_misa));
-        $estipendio = $estipendios[$tipo] ?? 0;
-
-        Misa::create([
-            'fecha' => $request->fecha,
-            'hora' => $request->hora,
-            'tipo_misa' => $request->tipo_misa,
-            'intencion' => $request->intencion,
-            'id_sacerdote' => $request->id_sacerdote,
-            'id_usuario_registro' => session('usuario')->id_usuario,
-            'observaciones' => $request->observaciones,
-            'estipendio' => $estipendio,
-            'estado' => $request->estado,
+        // Guardar sacramento base y asignar el ID del usuario logueado desde la sesión
+        $datos = $request->only([
+            'tipo_sacramento', 'fecha', 'hora', 'lugar',
+            'nombre_receptor', 'apellido_paterno', 'apellido_materno',
+            'fecha_nacimiento', 'sexo'
         ]);
+        $datos['id_usuario_registro'] = session('usuario')->id_usuario;
 
-        return redirect()->route('misas.index')->with('success', 'Misa registrada correctamente.');
+        $sacramento = Sacramento::create($datos);
+
+        // Crear detalle según tipo
+        switch ($request->tipo_sacramento) {
+            case 'bautizo':
+                Bautizo::create(['id_sacramento' => $sacramento->id_sacramento]);
+                break;
+            case 'comunion':
+                PrimeraComunion::create(['id_sacramento' => $sacramento->id_sacramento]);
+                break;
+            case 'confirmacion':
+                Confirmacion::create(['id_sacramento' => $sacramento->id_sacramento]);
+                break;
+            case 'matrimonio':
+                Matrimonio::create(['id_sacramento' => $sacramento->id_sacramento]);
+                break;
+        }
+
+        return redirect()->route('sacramentos.index')->with('success', 'Sacramento registrado correctamente.');
     }
 
-    public function edit(Misa $misa)
+    public function show(Sacramento $sacramento)
     {
-        $sacerdotes = Sacerdote::all();
-        return view('misas.edit', compact('misa', 'sacerdotes'));
+        return view('sacramentos.show', compact('sacramento'));
     }
 
-    public function update(Request $request, Misa $misa)
+    public function edit(Sacramento $sacramento)
+    {
+        return view('sacramentos.edit', compact('sacramento'));
+    }
+
+    public function update(Request $request, Sacramento $sacramento)
     {
         $request->validate([
-            'fecha' => 'required|date',
-            'hora' => 'required',
-            'tipo_misa' => 'required|string|max:100',
-            'intencion' => 'nullable|string',
-            'id_sacerdote' => 'nullable|exists:sacerdotes,id_sacerdote',
-            'observaciones' => 'nullable|string',
-            'estado' => 'required|in:programada,celebrada,cancelada',
+            'tipo_sacramento'    => 'required|in:bautizo,comunion,confirmacion,matrimonio',
+            'fecha'              => 'required|date',
+            'hora'               => 'required',
+            'lugar'              => 'required|string|max:100',
+            'nombre_receptor'    => 'required|string|max:100',
+            'apellido_paterno'   => 'required|string|max:100',
+            'apellido_materno'   => 'nullable|string|max:100',
+            'fecha_nacimiento'   => 'nullable|date',
+            'sexo'               => 'required|in:M,F'
         ]);
 
-        // Recalcular estipendio si se cambia el tipo de misa
-        $estipendios = [
-            'MISA DE DIFUNTOS COMUNITARIAS' => 20,
-            'MISA DE CUERPO PRESENTE' => 100,
-            'MISA DE SALUD Y OTRAS PETICIONES' => 100,
-            'MISA DE DEVOCION' => 350,
-            'MISA DE FIESTA (preste folclorico)' => 500,
-            'MISA DE ANIVERSARIO MATRIMONIAL' => 200,
-        ];
+        $sacramento->update($request->only([
+            'tipo_sacramento', 'fecha', 'hora', 'lugar',
+            'nombre_receptor', 'apellido_paterno', 'apellido_materno',
+            'fecha_nacimiento', 'sexo'
+        ]));
 
-        $tipo = strtoupper(trim($request->tipo_misa));
-        $estipendio = $estipendios[$tipo] ?? 0;
-
-        $misa->update([
-            'fecha' => $request->fecha,
-            'hora' => $request->hora,
-            'tipo_misa' => $request->tipo_misa,
-            'intencion' => $request->intencion,
-            'id_sacerdote' => $request->id_sacerdote,
-            'observaciones' => $request->observaciones,
-            'estipendio' => $estipendio,
-            'estado' => $request->estado,
-        ]);
-
-        return redirect()->route('misas.index')->with('success', 'Misa actualizada correctamente.');
+        return redirect()->route('sacramentos.index')->with('success', 'Sacramento actualizado correctamente.');
     }
 
-    public function destroy(Misa $misa)
+    public function destroy(Sacramento $sacramento)
     {
-        $misa->delete();
-        return redirect()->route('misas.index')->with('success', 'Misa eliminada correctamente.');
+        $sacramento->delete();
+        return redirect()->route('sacramentos.index')->with('success', 'Sacramento eliminado correctamente.');
     }
 }

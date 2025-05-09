@@ -4,75 +4,66 @@ namespace App\Http\Controllers;
 
 use App\Models\Ingreso;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class IngresoController extends Controller
 {
-    // Mostrar todos los ingresos
-    public function index()
-    {
+    public function index() {
         $ingresos = Ingreso::all();
-        return view('finanzas.ingresos.index', compact('ingresos'));
+        return view('ingresos.index', compact('ingresos'));
     }
 
-    // Mostrar el formulario de creación de ingreso
-    public function create()
-    {
-        return view('finanzas.ingresos.create');
+    public function create() {
+        return view('ingresos.create');
     }
 
-    // Almacenar un nuevo ingreso
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $request->validate([
-            'monto' => 'required|numeric',
-            'descripcion' => 'required|string',
+            'monto' => 'required|numeric|min:0',
+            'descripcion' => 'nullable|string',
             'fecha' => 'required|date',
-            'tipo_ingreso' => 'required|string',
-            'id_usuario_registro' => 'required|integer'
+            'tipo_ingreso' => 'required|in:donación,misa,sacramento,otro',
+            'id_usuario_registro' => 'nullable|integer'
+        ]);
+
+        // Asignamos el id_usuario_registro desde la sesión
+        $request->merge([
+            'id_usuario_registro' => session('usuario')->id_usuario // Usamos session para obtener el id_usuario
         ]);
 
         Ingreso::create($request->all());
-
-        return redirect()->route('finanzas.ingresos.index')->with('success', 'Ingreso registrado correctamente');
+        return redirect()->route('ingresos.index')->with('success', 'Ingreso creado.');
     }
 
-    // Mostrar los detalles de un ingreso
-    public function show($id)
-    {
-        $ingreso = Ingreso::findOrFail($id);
-        return view('finanzas.ingresos.show', compact('ingreso'));
+    public function edit(Ingreso $ingreso) {
+        return view('ingresos.edit', compact('ingreso'));
     }
 
-    // Mostrar formulario de edición de un ingreso
-    public function edit($id)
-    {
-        $ingreso = Ingreso::findOrFail($id);
-        return view('finanzas.ingresos.edit', compact('ingreso'));
-    }
-
-    // Actualizar un ingreso
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, Ingreso $ingreso) {
         $request->validate([
-            'monto' => 'required|numeric',
-            'descripcion' => 'required|string',
+            'monto' => 'required|numeric|min:0',
+            'descripcion' => 'nullable|string',
             'fecha' => 'required|date',
-            'tipo_ingreso' => 'required|string',
-            'id_usuario_registro' => 'required|integer'
+            'tipo_ingreso' => 'required|in:donación,misa,sacramento,otro',
+            'id_usuario_registro' => 'nullable|integer'
         ]);
 
-        $ingreso = Ingreso::findOrFail($id);
         $ingreso->update($request->all());
-
-        return redirect()->route('finanzas.ingresos.index')->with('success', 'Ingreso actualizado correctamente');
+        return redirect()->route('ingresos.index')->with('success', 'Ingreso actualizado.');
     }
 
-    // Eliminar un ingreso
-    public function destroy($id)
-    {
-        $ingreso = Ingreso::findOrFail($id);
+    public function destroy(Ingreso $ingreso) {
         $ingreso->delete();
+        return redirect()->route('ingresos.index')->with('success', 'Ingreso eliminado.');
+    }
 
-        return redirect()->route('finanzas.ingresos.index')->with('success', 'Ingreso eliminado correctamente');
+    public function show(Ingreso $ingreso) {
+        return view('ingresos.show', compact('ingreso'));
+    }
+
+    public function generarRecibo(Ingreso $ingreso)
+    {
+        $pdf = PDF::loadView('ingresos.recibo', compact('ingreso'));
+        return $pdf->download('recibo_ingreso_'.$ingreso->id.'.pdf');
     }
 }
