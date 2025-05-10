@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Egreso;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 
 class EgresoController extends Controller
@@ -77,22 +78,30 @@ class EgresoController extends Controller
     }
 
 
-    public function generarInforme(Request $request)
+    public function generateInforme(Request $request)
     {
-        $query = Egreso::query();
+        // Validar las fechas proporcionadas
+        $request->validate([
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date',
+        ]);
 
-        // Filtros por fechas
-        if ($request->fecha_inicio) {
-            $query->where('fecha', '>=', $request->fecha_inicio);
+        // Convertir las fechas de inicio y fin a formato Carbon para una mejor manipulación
+        $fechaInicio = Carbon::parse($request->fecha_inicio);
+        $fechaFin = Carbon::parse($request->fecha_fin);
+
+        // Obtener todos los egresos dentro del rango de fechas
+        $egresos = Egreso::whereBetween('fecha', [$fechaInicio, $fechaFin])->get();
+
+        // Si no hay egresos para las fechas seleccionadas
+        if ($egresos->isEmpty()) {
+            return redirect()->route('egresos.index')->with('error', 'No hay egresos para este rango de fechas.');
         }
-        if ($request->fecha_fin) {
-            $query->where('fecha', '<=', $request->fecha_fin);
-        }
 
-        $egresos = $query->get();
+        // Generar el informe en PDF utilizando la vista 'egresos.informe'
+        $pdf = PDF::loadView('egresos.informe', compact('egresos', 'fechaInicio', 'fechaFin'));
 
-        // Generar el PDF
-        $pdf = PDF::loadView('egresos.informe', compact('egresos'));
-        return $pdf->download('informe_egresos.pdf');
+        // Mostrar el PDF en el navegador
+        return $pdf->stream('informe_egresos_'.$fechaInicio->format('Y-m-d').'_'.$fechaFin->format('Y-m-d').'.pdf');
     }
 }

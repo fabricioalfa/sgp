@@ -10,25 +10,6 @@
     </a>
   </div>
 
-  <!-- Botón de generación de informes de egresos -->
-  <div class="flex justify-between mb-4">
-    <form action="{{ route('egresos.generarInforme') }}" method="GET">
-      <div class="flex gap-4">
-        <div>
-          <label for="fecha_inicio" class="block text-sm font-medium mb-1">Fecha de Inicio</label>
-          <input type="date" name="fecha_inicio" value="{{ request()->fecha_inicio }}" class="w-48 border rounded px-3 py-2">
-        </div>
-        <div>
-          <label for="fecha_fin" class="block text-sm font-medium mb-1">Fecha de Fin</label>
-          <input type="date" name="fecha_fin" value="{{ request()->fecha_fin }}" class="w-48 border rounded px-3 py-2">
-        </div>
-        <div>
-          <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Generar Informe</button>
-        </div>
-      </div>
-    </form>
-  </div>
-
   @if(session('success'))
     <div class="bg-green-100 text-green-800 p-2 rounded mb-4">
       {{ session('success') }}
@@ -38,6 +19,23 @@
   @if($egresos->isEmpty())
     <div class="text-gray-600">No hay egresos registrados.</div>
   @else
+    <!-- Formulario de filtro por fechas -->
+    <form action="{{ route('egresos.informe') }}" method="GET" target="_blank" class="flex gap-4 mb-6">
+      <div>
+        <label for="fecha_inicio" class="block text-sm font-medium mb-1">Fecha de Inicio</label>
+        <input type="date" name="fecha_inicio" value="{{ request()->fecha_inicio }}" class="w-48 border rounded px-3 py-2">
+      </div>
+      <div>
+        <label for="fecha_fin" class="block text-sm font-medium mb-1">Fecha de Fin</label>
+        <input type="date" name="fecha_fin" value="{{ request()->fecha_fin }}" class="w-48 border rounded px-3 py-2">
+      </div>
+      <div>
+        <!-- El botón enviará el formulario y abrirá el informe en una nueva pestaña -->
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Generar Informe</button>
+      </div>
+    </form>
+
+    <!-- Tabla de egresos -->
     <table class="w-full bg-white shadow text-sm">
       <thead class="bg-gray-200 text-left">
         <tr>
@@ -66,4 +64,9 @@
       </tbody>
     </table>
   @endif
+
+  <!-- Botón Volver a Finanzas -->
+  <div class="mt-4">
+    <a href="{{ route('finanzas.index') }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">Volver a Finanzas</a>
+  </div>
 @endsection

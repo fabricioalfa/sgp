@@ -25,5 +25,10 @@
       <h3 class="text-xl font-semibold text-blue-800">Registro de Sacramentos</h3>
       <p class="text-sm text-gray-600">Registrar y editar sacramentos como bautizos, comuniones, etc.</p>
     </a>
+
+    <a href="{{ route('actividades.index') }}" class="block p-6 bg-white rounded shadow hover:bg-blue-50">
+      <h3 class="text-xl font-semibold text-blue-800">Registro de Actividades</h3>
+      <p class="text-sm text-gray-600">Registrar y editar actividades parroquiales.</p>
+    </a>
   </div>
 @endsection

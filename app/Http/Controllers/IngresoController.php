@@ -61,9 +61,23 @@ class IngresoController extends Controller
         return view('ingresos.show', compact('ingreso'));
     }
 
-    public function generarRecibo(Ingreso $ingreso)
+
+    public function generateRecibo($ingresoId)
     {
+        // Buscar el ingreso por su ID
+        $ingreso = Ingreso::findOrFail($ingresoId);
+
+        // Si no se encuentra el ingreso, redirigir con un error
+        if (!$ingreso) {
+            return redirect()->route('ingresos.index')->with('error', 'Ingreso no encontrado.');
+        }
+
+        // Generar el PDF utilizando la vista 'ingresos.recibo'
         $pdf = PDF::loadView('ingresos.recibo', compact('ingreso'));
-        return $pdf->download('recibo_ingreso_'.$ingreso->id.'.pdf');
+
+        // Mostrar el PDF en el navegador y darle la opción de descarga (streaming)
+        return $pdf->stream('recibo_ingreso_'.$ingreso->id_ingreso.'.pdf');
     }
+    
+
 }

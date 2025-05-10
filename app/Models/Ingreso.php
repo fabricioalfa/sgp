@@ -10,12 +10,11 @@ class Ingreso extends Model
     use HasFactory;
 
     protected $table = 'ingresos';
-
-    protected $fillable = [
-        'monto', 'descripcion', 'fecha', 'tipo_ingreso', 'id_usuario_registro'
-    ];
-
     protected $primaryKey = 'id_ingreso';
+    
+    protected $fillable = [
+        'monto', 'descripcion', 'fecha', 'tipo_ingreso', 'id_usuario_registro',
+    ];
 
     public $timestamps = true;
 }

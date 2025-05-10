@@ -38,35 +38,39 @@
 <body>
     <div class="header">
         <h2>Informe de Egresos</h2>
-        <p>Fecha de Inicio: {{ request()->fecha_inicio }}</p>
-        <p>Fecha de Fin: {{ request()->fecha_fin }}</p>
+        <p>Fecha de inicio: {{ $fechaInicio->format('d-m-Y') }}</p>
+        <p>Fecha de fin: {{ $fechaFin->format('d-m-Y') }}</p>
     </div>
 
     <div class="content">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Monto</th>
-                    <th>Descripción</th>
-                    <th>Categoría</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($egresos as $egreso)
+        @if($egresos->count() > 0)
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>{{ $egreso->fecha }}</td>
-                        <td>{{ $egreso->monto }} Bs</td>
-                        <td>{{ $egreso->descripcion }}</td>
-                        <td>{{ $egreso->categoria }}</td>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach($egresos as $egreso)
+                        <tr>
+                            <td>{{ $egreso->fecha }}</td>
+                            <td>Bs {{ number_format($egreso->monto, 2) }}</td>
+                            <td>{{ $egreso->categoria }}</td>
+                            <td>{{ $egreso->descripcion }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p>No se encontraron egresos para este rango de fechas.</p>
+        @endif
     </div>
 
     <div class="footer">
-        <p>Gracias por revisar los informes de egresos</p>
+        <p>Gracias por su atención</p>
     </div>
 </body>
 </html>

@@ -17,6 +17,7 @@ use App\Http\Controllers\SacramentoController;
 use App\Http\Controllers\IngresoController;
 use App\Http\Controllers\EgresoController;  
 use App\Http\Controllers\FinanzasController;
+use App\Http\Controllers\ActividadController;
 
 use App\Http\Middleware\CheckSession;
 use App\Http\Middleware\AdminMiddleware;
@@ -45,7 +46,11 @@ Route::middleware([CheckSession::class])->group(function () {
         Route::resource('/usuarios', UsuarioController::class);
         Route::resource('/rrhh', RrhhController::class);
         //finanzass
+        // Ruta para generar el recibo
+        Route::get('/ingresos/{ingreso}/generateRecibo', [IngresoController::class, 'generateRecibo'])->name('ingresos.generateRecibo');
         Route::resource('ingresos', IngresoController::class);
+
+        Route::get('/egresos/informe', [EgresoController::class, 'generateInforme'])->name('egresos.informe');
         Route::resource('egresos', EgresoController::class);
         
 
@@ -61,6 +66,8 @@ Route::middleware([CheckSession::class])->group(function () {
         Route::resource('/cebs', CebController::class);
         Route::resource('/misas', MisaController::class);
 
+
+        Route::resource('/actividades', ActividadController::class) -> parameters(['actividades' => 'actividad']);
         // Rutas para sacramentos
         Route::resource('/sacramentos', SacramentoController::class); // Asegúrate de tener esta ruta
         Route::resource('/bautizos', BautizoController::class);
