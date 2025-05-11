@@ -1,35 +1,46 @@
 @extends('layouts.app')
 
-@section('title', 'Restablecer Contraseña')
-
 @section('content')
-  <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded shadow">
-    <h2 class="text-xl font-bold mb-4 text-center">Restablecer contraseña</h2>
+<div class="max-w-md mx-auto mt-8 p-6 bg-white rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">Restablecer contraseña</h2>
+  <form method="POST" action="{{ route('password.update') }}">
+    @csrf
+    <input type="hidden" name="token" value="{{ $token }}">
+    <label class="block mb-2">Correo electrónico</label>
+    <input
+      type="email"
+      name="email"
+      value="{{ old('email', $email) }}"
+      required
+      class="w-full border p-2 mb-4"
+    >
+    @error('email')
+      <p class="text-red-600 text-sm mb-4">{{ $message }}</p>
+    @enderror
 
-    @if(session('error'))
-      <div class="bg-red-200 text-red-800 px-4 py-2 rounded mb-4">
-        {{ session('error') }}
-      </div>
-    @endif
+    <label class="block mb-2">Nueva contraseña</label>
+    <input
+      type="password"
+      name="password"
+      required
+      class="w-full border p-2 mb-4"
+    >
+    @error('password')
+      <p class="text-red-600 text-sm mb-4">{{ $message }}</p>
+    @enderror
 
-    <form action="{{ route('password.update') }}" method="POST" class="space-y-4">
-      @csrf
+    <label class="block mb-2">Confirmar contraseña</label>
+    <input
+      type="password"
+      name="password_confirmation"
+      required
+      class="w-full border p-2 mb-4"
+    >
 
-      <input type="hidden" name="token" value="{{ $token }}">
-      <input type="hidden" name="correo_electronico" value="{{ $correo }}">
-
-      <label for="contrasena" class="block text-sm font-semibold">Nueva contraseña</label>
-      <input type="password" name="contrasena" id="contrasena"
-             class="w-full border px-4 py-2 rounded" required>
-
-      <label for="contrasena_confirmation" class="block text-sm font-semibold">Confirmar contraseña</label>
-      <input type="password" name="contrasena_confirmation" id="contrasena_confirmation"
-             class="w-full border px-4 py-2 rounded" required>
-
-      <button type="submit"
-              class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-        Cambiar contraseña
-      </button>
-    </form>
-  </div>
+    <button
+      type="submit"
+      class="w-full bg-blue-600 text-white p-2 rounded"
+    >Restablecer contraseña</button>
+  </form>
+</div>
 @endsection

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\PasswordResetController;
@@ -24,6 +25,18 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\SecretarioMiddleware;
 
 use function Laravel\Prompts\search;
+
+//mail test
+Route::get('/mail-test', function () {
+    // Envía un correo “en blanco” al log
+    Mail::raw('Este es un test de correo usando el driver log', function ($message) {
+        $message
+            ->to('tu@correo.com')      // cámbialo por un email cualquiera
+            ->subject('Prueba de driver log');
+    });
+
+    return 'Correo registrado en log. Revisa storage/logs/laravel.log';
+});
 
 // ✅ Mostrar formulario de login tanto en '/' como en '/login'
 Route::get('/', [AuthController::class, 'showLogin']);
@@ -91,8 +104,18 @@ Route::middleware([CheckSession::class])->group(function () {
     });
 });
 
-// 🔁 Recuperación de contraseña
-Route::get('/password/solicitar', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
-Route::post('/password/solicitar', [PasswordResetController::class, 'sendResetLink'])->name('password.send');
-Route::get('/password/restablecer', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
-Route::post('/password/restablecer', [PasswordResetController::class, 'updatePassword'])->name('password.update');
+// Recuperación de contraseña
+Route::get('/password/solicitar',    [PasswordResetController::class, 'showRequestForm'])
+     ->name('password.request');
+
+Route::post('/password/solicitar',   [PasswordResetController::class, 'sendResetLink'])
+     ->name('password.send');
+
+Route::get('/password/restablecer',  [PasswordResetController::class, 'showResetForm'])
+     ->name('password.reset');
+
+Route::post('/password/restablecer', [PasswordResetController::class, 'updatePassword'])
+     ->name('password.update');
+
+
+

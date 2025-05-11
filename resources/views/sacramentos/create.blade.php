@@ -9,62 +9,82 @@
     @csrf
 
     {{-- Campos comunes de sacramento --}}
-    <div>
-      <label class="block text-sm font-medium mb-1">Tipo de Sacramento <span class="text-red-500">*</span></label>
-      <select id="tipo_sacramento" name="tipo_sacramento" required class="w-full border rounded px-3 py-2" onchange="mostrarCamposEspecificos()">
-        <option value="">-- Seleccione --</option>
-        <option value="bautizo">Bautizo</option>
-        <option value="comunion">Primera Comunión</option>
-        <option value="confirmacion">Confirmación</option>
-        <option value="matrimonio">Matrimonio</option>
-      </select>
-    </div>
+<div>
+  <label class="block text-sm font-medium mb-1">Tipo de Sacramento <span class="text-red-500">*</span></label>
+  <select id="tipo_sacramento" name="tipo_sacramento" required
+          class="w-full border rounded px-3 py-2 @error('tipo_sacramento') border-red-500 @enderror"
+          onchange="mostrarCamposEspecificos()">
+    <option value="">-- Seleccione --</option>
+    <option value="bautizo" {{ old('tipo_sacramento')=='bautizo'?'selected':'' }}>Bautizo</option>
+    <option value="comunion" {{ old('tipo_sacramento')=='comunion'?'selected':'' }}>Primera Comunión</option>
+    <option value="confirmacion" {{ old('tipo_sacramento')=='confirmacion'?'selected':'' }}>Confirmación</option>
+    <option value="matrimonio" {{ old('tipo_sacramento')=='matrimonio'?'selected':'' }}>Matrimonio</option>
+  </select>
+  @error('tipo_sacramento')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+</div>
 
-    {{-- Datos comunes del sacramento --}}
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Fecha <span class="text-red-500">*</span></label>
-        <input type="date" name="fecha" value="{{ old('fecha') }}" required class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Hora <span class="text-red-500">*</span></label>
-        <input type="time" name="hora" value="{{ old('hora') }}" required class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
+{{-- Datos comunes del sacramento --}}
+<div class="grid grid-cols-2 gap-4">
+  <div>
+    <label class="block text-sm font-medium mb-1">Fecha <span class="text-red-500">*</span></label>
+    <input type="date" name="fecha" value="{{ old('fecha') }}" required
+           class="w-full border rounded px-3 py-2 @error('fecha') border-red-500 @enderror">
+    @error('fecha')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Hora <span class="text-red-500">*</span></label>
+    <input type="time" name="hora" value="{{ old('hora') }}" required
+           class="w-full border rounded px-3 py-2 @error('hora') border-red-500 @enderror">
+    @error('hora')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+  </div>
+</div>
 
-    <div>
-      <label class="block text-sm font-medium mb-1">Lugar <span class="text-red-500">*</span></label>
-      <input type="text" name="lugar" value="{{ old('lugar') }}" required class="w-full border rounded px-3 py-2">
-    </div>
+<div>
+  <label class="block text-sm font-medium mb-1">Lugar <span class="text-red-500">*</span></label>
+  <input type="text" name="lugar" value="{{ old('lugar') }}" required
+         class="w-full border rounded px-3 py-2 @error('lugar') border-red-500 @enderror">
+  @error('lugar')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+</div>
 
-    <div class="grid grid-cols-3 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre del Receptor</label>
-        <input type="text" name="nombre_receptor" value="{{ old('nombre_receptor') }}" required class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-        <input type="text" name="apellido_paterno" value="{{ old('apellido_paterno') }}" required class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-        <input type="text" name="apellido_materno" value="{{ old('apellido_materno') }}" class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
+<div class="grid grid-cols-3 gap-4">
+  <div>
+    <label class="block text-sm font-medium mb-1">Nombre del Receptor <span class="text-red-500">*</span></label>
+    <input type="text" name="nombre_receptor" value="{{ old('nombre_receptor') }}" required
+           class="w-full border rounded px-3 py-2 @error('nombre_receptor') border-red-500 @enderror">
+    @error('nombre_receptor')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Apellido Paterno <span class="text-red-500">*</span></label>
+    <input type="text" name="apellido_paterno" value="{{ old('apellido_paterno') }}" required
+           class="w-full border rounded px-3 py-2 @error('apellido_paterno') border-red-500 @enderror">
+    @error('apellido_paterno')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Apellido Materno</label>
+    <input type="text" name="apellido_materno" value="{{ old('apellido_materno') }}"
+           class="w-full border rounded px-3 py-2 @error('apellido_materno') border-red-500 @enderror">
+    @error('apellido_materno')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+  </div>
+</div>
 
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Fecha de Nacimiento</label>
-        <input type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Sexo</label>
-        <select name="sexo" required class="w-full border rounded px-3 py-2">
-          <option value="M" {{ old('sexo') == 'M' ? 'selected' : '' }}>Masculino</option>
-          <option value="F" {{ old('sexo') == 'F' ? 'selected' : '' }}>Femenino</option>
-        </select>
-      </div>
-    </div>
+<div class="grid grid-cols-2 gap-4">
+  <div>
+    <label class="block text-sm font-medium mb-1">Fecha de Nacimiento</label>
+    <input type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}"
+           class="w-full border rounded px-3 py-2 @error('fecha_nacimiento') border-red-500 @enderror">
+    @error('fecha_nacimiento')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Sexo <span class="text-red-500">*</span></label>
+    <select name="sexo" required
+            class="w-full border rounded px-3 py-2 @error('sexo') border-red-500 @enderror">
+      <option value="">-- Seleccione --</option>
+      <option value="M" {{ old('sexo')=='M'?'selected':'' }}>Masculino</option>
+      <option value="F" {{ old('sexo')=='F'?'selected':'' }}>Femenino</option>
+    </select>
+    @error('sexo')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+  </div>
+</div>
 
     {{-- Campos específicos de Bautizo --}}
     <div id="bautizo" class="campos-tipo-sacramento hidden">

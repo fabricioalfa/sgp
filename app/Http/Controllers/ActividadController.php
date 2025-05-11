@@ -65,7 +65,7 @@ class ActividadController extends Controller
 
         return redirect()->route('actividades.index')->with('success', 'Actividad actualizada correctamente.');
     }
-
+    
     // Eliminar la actividad
     public function destroy(Actividad $actividad)
     {

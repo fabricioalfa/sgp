@@ -8,7 +8,7 @@ class PrimeraComunion extends Model
 {
     protected $table = 'primeras_comuniones';
     protected $primaryKey = 'id_primera_comunion';
-    
+    public $timestamps = true;
 
     protected $fillable = [
         'id_sacramento', 'iglesia', 'nombre_padre', 'apellido_paterno_padre', 'apellido_materno_padre', 
