@@ -18,10 +18,12 @@ use App\Http\Controllers\IngresoController;
 use App\Http\Controllers\EgresoController;  
 use App\Http\Controllers\FinanzasController;
 use App\Http\Controllers\ActividadController;
-
+use App\Http\Controllers\CertificadoController;
 use App\Http\Middleware\CheckSession;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\SecretarioMiddleware;
+
+use function Laravel\Prompts\search;
 
 // ✅ Mostrar formulario de login tanto en '/' como en '/login'
 Route::get('/', [AuthController::class, 'showLogin']);
@@ -65,6 +67,18 @@ Route::middleware([CheckSession::class])->group(function () {
         Route::resource('/sacerdotes', SacerdoteController::class);
         Route::resource('/cebs', CebController::class);
         Route::resource('/misas', MisaController::class);
+
+        Route::get('/sacramentos/search', [SacramentoController::class, 'search'])->name('sacramentos.search');
+        
+        
+        Route::get('/certificados',          [CertificadoController::class, 'index'])
+        ->name('certificados.index');
+
+        Route::get('/certificados/crear',    [CertificadoController::class, 'create'])
+        ->name('certificados.create');
+
+        Route::post('/certificados',         [CertificadoController::class, 'store'])
+        ->name('certificados.store');
 
 
         Route::resource('/actividades', ActividadController::class) -> parameters(['actividades' => 'actividad']);
