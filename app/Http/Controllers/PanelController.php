@@ -2,26 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Usuario;
 
-class PerfilController extends Controller
+class PanelController extends Controller
 {
+    // Mostrar el panel principal y la información del perfil de usuario
     public function index()
     {
+        // Obtenemos el usuario de la sesión (asumimos que tienes la sesión de usuario en 'usuario')
         $usuario = session('usuario');
-        return view('perfil.index', compact('usuario'));
+
+        // Si no hay un usuario en la sesión, redirigir al login
+        if (!$usuario) {
+            return redirect()->route('login');
+        }
+
+        // Pasamos la variable usuario a la vista del panel
+        return view('panel.index', compact('usuario'));
     }
 
+    // Mostrar la vista para cambiar la contraseña
     public function showChangePassword()
     {
-        return view('perfil.cambiar-contrasena');
+        return view('panel.cambiar-contrasena');
     }
 
+    // Actualizar la contraseña del usuario
     public function updatePassword(Request $request)
     {
-        // Validación de campos
+        // Validación de la nueva contraseña
         $request->validate([
             'contrasena_actual' => 'required',
             'nueva_contrasena' => [
@@ -36,7 +47,7 @@ class PerfilController extends Controller
             ],
         ]);
 
-        // Obtener el usuario desde la sesión
+        // Buscar el usuario actual
         $usuario = Usuario::find(session('usuario')->id_usuario);
 
         // Verificar si la contraseña actual es correcta
@@ -48,7 +59,7 @@ class PerfilController extends Controller
         $usuario->contrasena = Hash::make($request->nueva_contrasena);
         $usuario->save();
 
-        // Redirigir con mensaje de éxito
+        // Redirigir de vuelta con un mensaje de éxito
         return back()->with('success', 'Contraseña actualizada correctamente.');
     }
 }

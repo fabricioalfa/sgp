@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\PerfilController; // Ensure this file exists in the specified namespace
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\SacramentoController;
 use App\Http\Controllers\BautizoController;
@@ -22,6 +22,7 @@ use App\Http\Middleware\CheckSession;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\SecretarioMiddleware;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PanelController;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -35,9 +36,16 @@ Route::middleware([CheckSession::class])->group(function () {
     Route::get('/panel', [AuthController::class, 'panel'])->name('panel');
 
     // ✅ Rutas para perfil (Ver perfil y Cambiar contraseña)
-    Route::get('/perfil', [PerfilController::class, 'index'])->name('perfil.index'); // Muestra el perfil
-    Route::get('/perfil/cambiar-contraseña', [PerfilController::class, 'showChangePassword'])->name('perfil.cambiar_contrasena'); // Muestra el formulario para cambiar la contraseña
-    Route::post('/perfil/cambiar-contraseña', [PerfilController::class, 'updatePassword'])->name('cambiar_contrasena.update'); // Actualiza la contraseña
+    Route::middleware([CheckSession::class])->group(function () {
+        Route::get('/panel', [PanelController::class, 'index'])->name('panel');
+        
+       // Panel principal y perfil del usuario
+    Route::get('/panel', [PanelController::class, 'index'])->name('panel');
+
+    // Rutas para cambiar la contraseña
+    Route::get('/perfil/cambiar-contraseña', [PanelController::class, 'showChangePassword'])->name('perfil.cambiar-contrasena');
+    Route::post('/perfil/cambiar-contraseña', [PanelController::class, 'updatePassword'])->name('perfil.cambiar-contrasena.update');
+    });
 
     // ✅ Rutas solo para ADMINISTRADOR
     Route::middleware([AdminMiddleware::class])->group(function () {
