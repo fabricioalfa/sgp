@@ -23,6 +23,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\SecretarioMiddleware;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PanelController;
+use Illuminate\Http\Request;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -58,6 +59,11 @@ Route::middleware([CheckSession::class])->group(function () {
     // ✅ Rutas solo para SECRETARIO
     Route::middleware([SecretarioMiddleware::class])->group(function () {
         Route::resource('finanzas', FinanzasController::class);
+        // Definir la ruta para el reporte de finanzas
+        Route::get('/finanzas/reporte', [FinanzasController::class, 'generateReport'])->name('finanzas.reporte');
+
+
+
         Route::resource('/ingresos', IngresoController::class);
         Route::get('/ingresos/{ingreso}/generateRecibo', [IngresoController::class, 'generateRecibo'])->name('ingresos.generateRecibo');
         Route::get('/egresos/informe', [EgresoController::class, 'generarInforme'])->name('egresos.informe');
@@ -65,7 +71,19 @@ Route::middleware([CheckSession::class])->group(function () {
         Route::resource('/egresos', EgresoController::class);  
         Route::resource('/sacerdotes', SacerdoteController::class);
         Route::resource('/cebs', CebController::class);
-        Route::resource('/misas', MisaController::class);
+        Route::resource('misas', MisaController::class);
+        Route::get('misas/{misa}/verRecibo', [MisaController::class, 'verRecibo'])->name('misas.verRecibo');
+        Route::post('/eliminar-archivo', function (Request $request) {
+            $filePath = $request->input('filePath');
+        
+            if (file_exists($filePath)) {
+                unlink($filePath);  // Eliminar el archivo
+                return response()->json(['status' => 'ok']);
+            }
+        
+            return response()->json(['status' => 'error'], 400);
+        });
+
         Route::resource('/actividades', ActividadController::class) -> parameters(['actividades' => 'actividad']);
         Route::resource('/sacramentos', SacramentoController::class);
         Route::resource('/bautizos', BautizoController::class);

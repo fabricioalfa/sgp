@@ -11,26 +11,41 @@
     <div>
       <label class="block text-sm font-semibold">Fecha</label>
       <input type="date" name="fecha" value="{{ old('fecha') }}" class="w-full border px-3 py-2 rounded" required>
+      @error('fecha')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div>
       <label class="block text-sm font-semibold">Monto (Bs.)</label>
       <input type="number" step="0.01" name="monto" value="{{ old('monto') }}" class="w-full border px-3 py-2 rounded" required>
+      @error('monto')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div>
       <label class="block text-sm font-semibold">Descripción</label>
       <textarea name="descripcion" class="w-full border px-3 py-2 rounded">{{ old('descripcion') }}</textarea>
+      @error('descripcion')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div>
       <label class="block text-sm font-semibold">Categoría</label>
       <input type="text" name="categoria" value="{{ old('categoria') }}" class="w-full border px-3 py-2 rounded">
+      @error('categoria')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div>
       <label class="block text-sm font-semibold">ID usuario que autorizó (opcional)</label>
       <input type="number" name="id_usuario_autorizador" value="{{ old('id_usuario_autorizador') }}" class="w-full border px-3 py-2 rounded">
+      @error('id_usuario_autorizador')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div class="flex gap-2">

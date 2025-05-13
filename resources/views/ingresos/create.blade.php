@@ -11,16 +11,25 @@
     <div>
       <label class="block text-sm font-semibold">Fecha</label>
       <input type="date" name="fecha" value="{{ old('fecha') }}" class="w-full border px-3 py-2 rounded" required>
+      @error('fecha')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div>
       <label class="block text-sm font-semibold">Monto (Bs.)</label>
       <input type="number" step="0.01" name="monto" value="{{ old('monto') }}" class="w-full border px-3 py-2 rounded" required>
+      @error('monto')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div>
       <label class="block text-sm font-semibold">Descripción</label>
       <textarea name="descripcion" class="w-full border px-3 py-2 rounded">{{ old('descripcion') }}</textarea>
+      @error('descripcion')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div>
@@ -33,6 +42,9 @@
           </option>
         @endforeach
       </select>
+      @error('tipo_ingreso')
+        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+      @enderror
     </div>
 
     <div class="flex gap-2">

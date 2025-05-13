@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
-
 class EgresoController extends Controller
 {
     public function index()
@@ -23,27 +22,25 @@ class EgresoController extends Controller
 
     public function store(Request $request)
     {
+        // Validaciones
         $request->validate([
-            'monto' => 'required|numeric|min:0',
-            'descripcion' => 'nullable|string',
-            'fecha' => 'required|date',
-            'categoria' => 'nullable|string|max:100',
-            'id_usuario_autorizador' => 'nullable|integer'
+            'monto' => 'required|numeric|min:0.01', // Asegura que el monto sea mayor que 0
+            'descripcion' => 'nullable|string|max:255', // La descripción es opcional, pero si está, debe ser un texto
+            'fecha' => 'required|date', // La fecha es obligatoria
+            'categoria' => 'nullable|string|max:100', // La categoría es opcional
+            'id_usuario_autorizador' => 'nullable|integer', // El id_autorizador es opcional, pero si está debe ser un entero
         ]);
 
-        // Asignamos el id_usuario_autorizador desde la sesión
+        // Asignamos el id_usuario_autorizador desde la sesión si no se pasó
         $request->merge([
             'id_usuario_autorizador' => session('usuario')->id_usuario // Usamos session para obtener el id_usuario
         ]);
 
+        // Crear el egreso
         Egreso::create($request->all());
 
-        return redirect()->route('egresos.index')->with('success', 'Egreso registrado correctamente.');
-    }
-
-    public function show(Egreso $egreso)
-    {
-        return view('egresos.show', compact('egreso'));
+        // Redirigir a la lista de egresos con un mensaje de éxito
+        return redirect()->route('egresos.index')->with('success', 'Egreso creado exitosamente.');
     }
 
     public function edit(Egreso $egreso)
@@ -53,32 +50,38 @@ class EgresoController extends Controller
 
     public function update(Request $request, Egreso $egreso)
     {
+        // Validaciones
         $request->validate([
-            'monto' => 'required|numeric|min:0',
-            'descripcion' => 'nullable|string',
-            'fecha' => 'required|date',
-            'categoria' => 'nullable|string|max:100',
-            'id_usuario_autorizador' => 'nullable|integer'
+            'monto' => 'required|numeric|min:0.01', // Asegura que el monto sea mayor que 0
+            'descripcion' => 'nullable|string|max:255', // La descripción es opcional, pero si está, debe ser un texto
+            'fecha' => 'required|date', // La fecha es obligatoria
+            'categoria' => 'nullable|string|max:100', // La categoría es opcional
+            'id_usuario_autorizador' => 'nullable|integer', // El id_autorizador es opcional, pero si está debe ser un entero
         ]);
 
-        // Asignamos el id_usuario_autorizador desde la sesión
-        $request->merge([
-            'id_usuario_autorizador' => session('usuario')->id_usuario // Usamos session para obtener el id_usuario
-        ]);
-
+        // Actualizar el egreso con los datos validados
         $egreso->update($request->all());
 
-        return redirect()->route('egresos.index')->with('success', 'Egreso actualizado correctamente.');
+        // Redirigir a la lista de egresos con un mensaje de éxito
+        return redirect()->route('egresos.index')->with('success', 'Egreso actualizado exitosamente.');
     }
 
     public function destroy(Egreso $egreso)
     {
+        // Eliminar el egreso
         $egreso->delete();
-        return redirect()->route('egresos.index')->with('success', 'Egreso eliminado correctamente.');
+
+        // Redirigir a la lista de egresos con un mensaje de éxito
+        return redirect()->route('egresos.index')->with('success', 'Egreso eliminado exitosamente.');
     }
 
+    public function show(Egreso $egreso)
+    {
+        // Mostrar los detalles del egreso
+        return view('egresos.show', compact('egreso'));
+    }
 
-    public function generateInforme(Request $request)
+    public function generarInforme(Request $request)
     {
         // Validar las fechas proporcionadas
         $request->validate([
