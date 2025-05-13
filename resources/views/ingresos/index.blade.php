@@ -4,8 +4,8 @@
 
 @section('content')
   <div class="flex justify-between mb-4">
-    <h2 class="text-xl font-bold">Ingresos registrados</h2>
-    <a href="{{ route('ingresos.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+    <h2 class="text-xl font-bold text-[#C1440E]">Ingresos registrados</h2>
+    <a href="{{ route('ingresos.create') }}" class="bg-[#E9A209] text-white px-4 py-2 rounded hover:bg-[#c98b07] transition">
       Nuevo ingreso
     </a>
   </div>
@@ -21,7 +21,7 @@
   @else
     <!-- Tabla de ingresos -->
     <table class="w-full bg-white shadow text-sm">
-      <thead class="bg-gray-200 text-left">
+      <thead class="bg-[#F4A261] text-left text-white">
         <tr>
           <th class="p-2">Fecha</th>
           <th class="p-2">Monto</th>
@@ -34,7 +34,7 @@
           <tr class="border-b">
             <td class="p-2">{{ $ingreso->fecha }}</td>
             <td class="p-2">Bs {{ number_format($ingreso->monto, 2) }}</td>
-            <td class="p-2">{{ ucfirst($ingreso->tipo_ingreso) }}</td>
+            <td class="p-2 capitalize">{{ $ingreso->tipo_ingreso }}</td>
             <td class="p-2 flex gap-2">
               <a href="{{ route('ingresos.show', $ingreso) }}" class="text-blue-600 hover:underline">Ver</a>
               <a href="{{ route('ingresos.edit', $ingreso) }}" class="text-yellow-600 hover:underline">Editar</a>
@@ -51,6 +51,6 @@
 
   <!-- Botón Volver a Finanzas -->
   <div class="mt-4">
-    <a href="{{ route('finanzas.index') }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">Volver a Finanzas</a>
+    <a href="{{ route('finanzas.index') }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 transition">Volver a Finanzas</a>
   </div>
 @endsection

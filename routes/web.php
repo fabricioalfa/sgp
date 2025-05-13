@@ -57,6 +57,12 @@ Route::middleware([CheckSession::class])->group(function () {
 
     // ✅ Rutas solo para SECRETARIO
     Route::middleware([SecretarioMiddleware::class])->group(function () {
+        Route::resource('finanzas', FinanzasController::class);
+        Route::resource('/ingresos', IngresoController::class);
+        Route::get('/ingresos/{ingreso}/generateRecibo', [IngresoController::class, 'generateRecibo'])->name('ingresos.generateRecibo');
+        Route::get('/egresos/informe', [EgresoController::class, 'generarInforme'])->name('egresos.informe');
+
+        Route::resource('/egresos', EgresoController::class);  
         Route::resource('/sacerdotes', SacerdoteController::class);
         Route::resource('/cebs', CebController::class);
         Route::resource('/misas', MisaController::class);

@@ -83,6 +83,15 @@
         </svg>
         Certificados
       </a>
+      <a href="{{ route('finanzas.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
+        <!-- Moneda (Heroicons) -->
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path fill="none" stroke="currentColor" stroke-width="2" d="M17 9l4 4-4 4M7 9l-4 4 4 4"></path>
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+        Finanzas
+    </a>
+    
     </nav>
 
     {{-- Usuario --}}
