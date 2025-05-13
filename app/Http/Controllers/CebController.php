@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ceb;
-use Illuminate\Http\Request;
+use App\Http\Requests\CebRequest;
 
 class CebController extends Controller
 {
     /**
-     * Muestra el listado de personas en CEBs
+     * Muestra el listado de registros de CEBs.
      */
     public function index()
     {
@@ -17,7 +17,7 @@ class CebController extends Controller
     }
 
     /**
-     * Muestra el formulario de creación
+     * Muestra el formulario para crear un nuevo registro.
      */
     public function create()
     {
@@ -25,35 +25,22 @@ class CebController extends Controller
     }
 
     /**
-     * Almacena un nuevo registro
+     * Almacena un nuevo registro de CEB.
      */
-    public function store(Request $request)
+    public function store(CebRequest $request)
     {
-        $request->validate([
-            'nombres_ceb' => 'required|string|max:100',
-            'apellido_pat_ceb' => 'nullable|string|max:100',
-            'apellido_mat_ceb' => 'nullable|string|max:100',
-            'responsable' => 'required|in:SI,NO',
-            'ceb' => 'required|string|max:100',
-            'telefono' => 'nullable|string|max:20'
-        ]);
+        $data = $request->validated();
+        $data['id_usuario_registro'] = session('usuario')->id_usuario;
 
-        $registro = new Ceb();
-        $registro->nombres_ceb = $request->nombres_ceb;
-        $registro->apellido_pat_ceb = $request->apellido_pat_ceb;
-        $registro->apellido_mat_ceb = $request->apellido_mat_ceb;
-        $registro->responsable = $request->responsable;
-        $registro->ceb = $request->ceb;
-        $registro->telefono = $request->telefono;
-        $registro->id_usuario_registro = session('usuario')->id_usuario;
+        Ceb::create($data);
 
-        $registro->save();
-
-        return redirect()->route('cebs.index')->with('success', 'Registro creado exitosamente.');
+        return redirect()
+            ->route('cebs.index')
+            ->with('success', 'Registro creado exitosamente.');
     }
 
     /**
-     * Muestra un registro específico
+     * Muestra un registro específico.
      */
     public function show(Ceb $ceb)
     {
@@ -61,7 +48,7 @@ class CebController extends Controller
     }
 
     /**
-     * Muestra el formulario de edición
+     * Muestra el formulario de edición de un registro existente.
      */
     public function edit(Ceb $ceb)
     {
@@ -69,37 +56,27 @@ class CebController extends Controller
     }
 
     /**
-     * Actualiza un registro existente
+     * Actualiza un registro existente de CEB.
      */
-    public function update(Request $request, Ceb $ceb)
+    public function update(CebRequest $request, Ceb $ceb)
     {
-        $request->validate([
-            'nombres_ceb' => 'required|string|max:100',
-            'apellido_pat_ceb' => 'nullable|string|max:100',
-            'apellido_mat_ceb' => 'nullable|string|max:100',
-            'responsable' => 'required|in:SI,NO',
-            'ceb' => 'required|string|max:100',
-            'telefono' => 'nullable|string|max:20'
-        ]);
+        $data = $request->validated();
+        $ceb->update($data);
 
-        $ceb->nombres_ceb = $request->nombres_ceb;
-        $ceb->apellido_pat_ceb = $request->apellido_pat_ceb;
-        $ceb->apellido_mat_ceb = $request->apellido_mat_ceb;
-        $ceb->responsable = $request->responsable;
-        $ceb->ceb = $request->ceb;
-        $ceb->telefono = $request->telefono;
-        
-        $ceb->save();
-
-        return redirect()->route('cebs.index')->with('success', 'Registro actualizado exitosamente.');
+        return redirect()
+            ->route('cebs.index')
+            ->with('success', 'Registro actualizado exitosamente.');
     }
 
     /**
-     * Elimina un registro
+     * Elimina un registro de CEB.
      */
     public function destroy(Ceb $ceb)
     {
         $ceb->delete();
-        return redirect()->route('cebs.index')->with('success', 'Registro eliminado exitosamente.');
+
+        return redirect()
+            ->route('cebs.index')
+            ->with('success', 'Registro eliminado exitosamente.');
     }
 }

@@ -1,10 +1,12 @@
 <?php
+// app/Http/Controllers/MisaController.php
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Misa;
 use App\Models\Sacerdote;
+use App\Models\Egreso;
+use App\Http\Requests\MisaRequest;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -12,6 +14,11 @@ class MisaController extends Controller
 {
     public function index()
     {
+        // Marcar como celebrada las misas pasadas
+        Misa::whereDate('fecha', '<', Carbon::today())
+            ->whereNotIn('estado', ['celebrada', 'cancelada'])
+            ->update(['estado' => 'celebrada']);
+
         $misas = Misa::with('sacerdote')
             ->orderBy('fecha', 'desc')
             ->get();
@@ -25,35 +32,11 @@ class MisaController extends Controller
         return view('misas.create', compact('sacerdotes'));
     }
 
-    public function store(Request $request)
+    public function store(MisaRequest $request)
     {
-        $request->validate([
-            'fecha'        => 'required|date',
-            'hora'         => 'required',
-            'tipo_misa'    => 'required|string|max:100',
-            'intencion'    => 'nullable|string',
-            'id_sacerdote' => 'nullable|exists:sacerdotes,id_sacerdote',
-            'observaciones'=> 'nullable|string',
-            'estado'       => 'required|in:programada,celebrada,cancelada',
-        ]);
+        $data = $request->validated();
 
-        // 0) Restricción: no duplicar fecha+hora
-        $existe = Misa::where('fecha', $request->fecha)
-                    ->where('hora', $request->hora)
-                    ->where('estado', '!=', 'cancelada') // opcional: permitir sobreescribir canceladas
-                    ->exists();
-
-        if ($existe) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'hora' => 'Ya hay una misa registrada en ' 
-                            . \Carbon\Carbon::parse($request->fecha)->format('d/m/Y')
-                            . ' a las ' . $request->hora . '.'
-                ]);
-        }
-
-        // 1) Definir montos
+        // Definir estipendios
         $estipendios = [
             'MISA DE DIFUNTOS COMUNITARIAS'      => 20,
             'MISA DE CUERPO PRESENTE'            => 100,
@@ -63,29 +46,21 @@ class MisaController extends Controller
             'MISA DE ANIVERSARIO MATRIMONIAL'    => 200,
         ];
 
-        $tipo       = strtoupper(trim($request->tipo_misa));
-        $estipendio = $estipendios[$tipo] ?? 0;
+        $tipoKey    = strtoupper(trim($data['tipo_misa']));
+        $estipendio = $estipendios[$tipoKey] ?? 0;
 
-        // 2) Crear misa
-        $misa = Misa::create([
-            'fecha'               => $request->fecha,
-            'hora'                => $request->hora,
-            'tipo_misa'           => $request->tipo_misa,
-            'intencion'           => $request->intencion,
-            'id_sacerdote'        => $request->id_sacerdote,
+        // Crear misa
+        $misa = Misa::create(array_merge($data, [
             'id_usuario_registro' => session('usuario')->id_usuario,
-            'observaciones'       => $request->observaciones,
             'estipendio'          => $estipendio,
-            'estado'              => $request->estado,
-        ]);
+        ]));
 
-        // 3) Registrar ingreso
+        // Registrar ingreso financiero
         DB::table('ingresos')->insert([
             'tipo_ingreso'        => 'misa',
             'monto'               => $estipendio,
             'fecha'               => now(),
-            'descripcion'         => "Estipendio misa “{$misa->tipo_misa}” del " 
-                                    . now()->format('d/m/Y'),
+            'descripcion'         => "Estipendio misa “{$misa->tipo_misa}” del " . now()->format('d/m/Y'),
             'id_usuario_registro' => session('usuario')->id_usuario,
             'created_at'          => now(),
             'updated_at'          => now(),
@@ -102,17 +77,9 @@ class MisaController extends Controller
         return view('misas.edit', compact('misa', 'sacerdotes'));
     }
 
-    public function update(Request $request, Misa $misa)
+    public function update(MisaRequest $request, Misa $misa)
     {
-        $request->validate([
-            'fecha'        => 'required|date',
-            'hora'         => 'required',
-            'tipo_misa'    => 'required|string|max:100',
-            'intencion'    => 'nullable|string',
-            'id_sacerdote' => 'nullable|exists:sacerdotes,id_sacerdote',
-            'observaciones'=> 'nullable|string',
-            'estado'       => 'required|in:programada,celebrada,cancelada',
-        ]);
+        $data = $request->validated();
 
         // Recalcular estipendio
         $estipendios = [
@@ -124,19 +91,25 @@ class MisaController extends Controller
             'MISA DE ANIVERSARIO MATRIMONIAL'    => 200,
         ];
 
-        $tipo       = strtoupper(trim($request->tipo_misa));
-        $estipendio = $estipendios[$tipo] ?? 0;
+        $tipoKey    = strtoupper(trim($data['tipo_misa']));
+        $estipendio = $estipendios[$tipoKey] ?? 0;
 
-        $misa->update([
-            'fecha'          => $request->fecha,
-            'hora'           => $request->hora,
-            'tipo_misa'      => $request->tipo_misa,
-            'intencion'      => $request->intencion,
-            'id_sacerdote'   => $request->id_sacerdote,
-            'observaciones'  => $request->observaciones,
-            'estipendio'     => $estipendio,
-            'estado'         => $request->estado,
-        ]);
+        // Actualizar misa
+        $misa->update(array_merge($data, [
+            'estipendio' => $estipendio,
+        ]));
+
+        // Si se cancela, registrar egreso con categoría
+        if ($data['estado'] === 'cancelada') {
+            Egreso::create([
+                'tipo_egreso'         => 'misa_cancelada',
+                'categoria'           => 'misa',
+                'monto'               => $estipendio,
+                'fecha'               => now(),
+                'descripcion'         => "Egreso por cancelación de misa “{$misa->tipo_misa}”",
+                'id_usuario_registro' => session('usuario')->id_usuario,
+            ]);
+        }
 
         return redirect()
             ->route('misas.index')
@@ -146,6 +119,7 @@ class MisaController extends Controller
     public function destroy(Misa $misa)
     {
         $misa->delete();
+
         return redirect()
             ->route('misas.index')
             ->with('success', 'Misa eliminada correctamente.');

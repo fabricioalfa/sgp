@@ -3,37 +3,21 @@
 @section('title', 'Panel del Secretario')
 
 @section('content')
-  <h2 class="text-2xl font-bold mb-6">Bienvenido, Secretario</h2>
+  <h2 class="text-3xl font-bold text-purple-800 mb-6">Bienvenido, Secretario</h2>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <a href="{{ route('sacerdotes.index') }}" class="block p-6 bg-white rounded shadow hover:bg-blue-50">
-      <h3 class="text-xl font-semibold text-blue-800">Gestión de Sacerdotes</h3>
-      <p class="text-sm text-gray-600">Registrar y editar información de sacerdotes.</p>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <a href="{{ route('sacerdotes.index') }}"
+       class="group block bg-purple-100 p-6 rounded-xl shadow hover:shadow-md transition">
+      <h3 class="text-lg font-semibold text-purple-800 mb-1">Gestión de Sacerdotes</h3>
+      <p class="text-sm text-gray-700">Registrar y editar sacerdotes.</p>
     </a>
 
-    <a href="{{ route('cebs.index') }}" class="block p-6 bg-white rounded shadow hover:bg-blue-50">
-      <h3 class="text-xl font-semibold text-blue-800">Comunidades CEBs</h3>
-      <p class="text-sm text-gray-600">Administrar comunidades eclesiales de base.</p>
+    <a href="{{ route('certificados.index') }}"
+       class="group block bg-purple-100 p-6 rounded-xl shadow hover:shadow-md transition">
+      <h3 class="text-lg font-semibold text-purple-800 mb-1">Emitir Certificados</h3>
+      <p class="text-sm text-gray-700">Generar documentos parroquiales.</p>
     </a>
 
-    <a href="{{ route('misas.index') }}" class="block p-6 bg-white rounded shadow hover:bg-blue-50">
-      <h3 class="text-xl font-semibold text-blue-800">Registro de Misas</h3>
-      <p class="text-sm text-gray-600">Registrar, editar o cancelar misas parroquiales.</p>
-    </a>
-
-    <a href="{{ route('sacramentos.index') }}" class="block p-6 bg-white rounded shadow hover:bg-blue-50">
-      <h3 class="text-xl font-semibold text-blue-800">Registro de Sacramentos</h3>
-      <p class="text-sm text-gray-600">Registrar y editar sacramentos como bautizos, comuniones, etc.</p>
-    </a>
-
-    <a href="{{ route('actividades.index') }}" class="block p-6 bg-white rounded shadow hover:bg-blue-50">
-      <h3 class="text-xl font-semibold text-blue-800">Registro de Actividades</h3>
-      <p class="text-sm text-gray-600">Registrar y editar actividades parroquiales.</p>
-    </a>
-
-    <a href="{{ route('certificados.index') }}" class="block p-6 bg-white rounded shadow hover:bg-blue-50">
-      <h3 class="text-xl font-semibold text-blue-800">Emitir certificados</h3>
-      <p class="text-sm text-gray-600">Genera todo tipo de certificados.</p>
-    </a>
+    {{-- Puedes seguir agregando tarjetas similares aquí --}}
   </div>
 @endsection

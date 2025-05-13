@@ -3,55 +3,87 @@
 @section('title', 'Lista de Sacramentos')
 
 @section('content')
-  <div class="flex justify-between items-center mb-4">
-    <h2 class="text-xl font-bold">Sacramentos registrados</h2>
-    <a href="{{ route('sacramentos.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-      Nuevo sacramento
-    </a>
+<div class="mb-6 flex justify-between items-center">
+  <h2 class="text-2xl font-bold text-[#C1440E]">Sacramentos Registrados</h2>
+  <a href="{{ route('sacramentos.create') }}"
+     class="bg-[#E9A209] text-white px-5 py-2 rounded-full shadow hover:bg-[#c98b07] transition">
+    + Nuevo Sacramento
+  </a>
+</div>
+
+@if(session('success'))
+  <div class="bg-green-100/80 border border-green-300 text-green-800 px-4 py-2 rounded-lg mb-4 text-sm">
+    {{ session('success') }}
   </div>
+@endif
 
-  @if(session('success'))
-    <div class="bg-green-100 text-green-800 p-2 rounded mb-4">
-      {{ session('success') }}
-    </div>
-  @endif
+{{-- Tabla con fondo más transparente y scroll si excede la altura --}}
+<div class="overflow-auto max-h-[70vh] rounded-xl shadow bg-white/60">
+  <table class="w-full min-w-[600px] text-[15px] text-[#573830]">
 
-  @if($sacramentos->isEmpty())
-    <div class="text-gray-600">No hay sacramentos registrados.</div>
-  @else
-    <table class="w-full text-sm bg-white shadow rounded">
-      <thead class="bg-gray-100 text-left">
-        <tr>
-          <th class="p-2">Tipo</th>
-          <th class="p-2">Fecha</th>
-          <th class="p-2">Hora</th>
-          <th class="p-2">Receptor</th>
-          <th class="p-2">Sexo</th>
-          <th class="p-2">Lugar</th>
-          <th class="p-2">Acciones</th>
+    <thead class="bg-white/20 text-[#C1440E] uppercase tracking-wide text-sm border-b border-[#F4A261]">
+      <tr>
+        <th class="text-left p-3">Tipo</th>
+        <th class="text-left p-3">Fecha</th>
+        <th class="text-left p-3">Hora</th>
+        <th class="text-left p-3">Receptor</th>
+        <th class="text-left p-3">Sexo</th>
+        <th class="text-left p-3">Lugar</th>
+        <th class="text-left p-3">Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @foreach($sacramentos as $sacramento)
+        <tr class="border-b border-[#F4A261]/50 hover:bg-white/10 transition" x-data="{ showConfirm: false }">
+          <td class="p-3 capitalize">{{ $sacramento->tipo_sacramento }}</td>
+          <td class="p-3">{{ \Carbon\Carbon::parse($sacramento->fecha)->format('d/m/Y') }}</td>
+          <td class="p-3">{{ \Carbon\Carbon::parse($sacramento->hora)->format('H:i') }}</td>
+          <td class="p-3">{{ $sacramento->nombre_receptor }} {{ $sacramento->apellido_paterno }} {{ $sacramento->apellido_materno }}</td>
+          <td class="p-3">{{ $sacramento->sexo == 'M' ? 'Masculino' : 'Femenino' }}</td>
+          <td class="p-3">{{ $sacramento->lugar }}</td>
+          <td class="p-3 flex gap-2 flex-wrap">
+            <a href="{{ route('sacramentos.show', $sacramento) }}"
+               class="bg-[#F4A261] text-white px-4 py-1 rounded-full text-sm hover:bg-[#dd843f] transition">
+              Ver
+            </a>
+            <a href="{{ route('sacramentos.edit', $sacramento->id_sacramento) }}"  {{-- Aquí cambiamos el enlace a la ruta correcta --}}
+               class="bg-[#E9A209] text-white px-4 py-1 rounded-full text-sm hover:bg-[#c98b07] transition">
+              Editar
+            </a>
+            <button @click="showConfirm = true"
+                    class="bg-[#C1440E] text-white px-4 py-1 rounded-full text-sm hover:bg-[#a8390b] transition">
+              Eliminar
+            </button>
+
+            {{-- Modal --}}
+            <div x-show="showConfirm" x-cloak x-transition
+                 class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+              <div class="bg-white/90 rounded-xl shadow-xl p-6 w-full max-w-sm text-center text-[#573830]">
+                <h3 class="text-lg font-semibold text-[#C1440E] mb-4">¿Confirmar eliminación?</h3>
+                <p class="text-sm mb-6">Esta acción no se puede deshacer.</p>
+                <div class="flex justify-center gap-4">
+                  <button @click="showConfirm = false"
+                          class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                    Cancelar
+                  </button>
+                  <form action="{{ route('sacramentos.destroy', $sacramento) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            class="bg-[#C1440E] text-white px-4 py-2 rounded-lg hover:bg-[#a8390b] transition">
+                      Eliminar
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        @foreach($sacramentos as $sacramento)
-          <tr class="border-b">
-            <td class="p-2 capitalize">{{ $sacramento->tipo_sacramento }}</td>
-            <td class="p-2">{{ $sacramento->fecha }}</td>
-            <td class="p-2">{{ $sacramento->hora }}</td>
-            <td class="p-2">{{ $sacramento->nombre_receptor }} {{ $sacramento->apellido_paterno }} {{ $sacramento->apellido_materno }}</td>
-            <td class="p-2">{{ $sacramento->sexo }}</td>
-            <td class="p-2">{{ $sacramento->lugar }}</td>
-            <td class="p-2 flex gap-2">
-              <a href="{{ route('sacramentos.show', $sacramento) }}" class="text-blue-600 hover:underline">Ver</a>
-              <a href="{{ route('sacramentos.edit', $sacramento) }}" class="text-yellow-600 hover:underline">Editar</a>
-              <form action="{{ route('sacramentos.destroy', $sacramento) }}" method="POST" onsubmit="return confirm('¿Eliminar este sacramento?')">
-                @csrf
-                @method('DELETE')
-                <button class="text-red-600 hover:underline">Eliminar</button>
-              </form>
-            </td>
-          </tr>
-        @endforeach
-      </tbody>
-    </table>
-  @endif
+      @endforeach
+    </tbody>
+
+  </table>
+</div>
 @endsection

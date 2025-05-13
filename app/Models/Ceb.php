@@ -11,12 +11,11 @@ class Ceb extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'nombres_ceb',
+        'apellido_pat_ceb',
+        'apellido_mat_ceb',
         'responsable',
-        'nombres_responsable',
-        'apellido_paterno_responsable',
-        'apellido_materno_responsable',
+        'ceb',
         'telefono',
-        'eb',   //nombre de la ceb a la que pertence
-        'id_usuario_registro',
-    ];
+      ];
 }
