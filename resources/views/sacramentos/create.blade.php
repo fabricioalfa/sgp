@@ -3,461 +3,92 @@
 @section('title', 'Registrar Sacramento')
 
 @section('content')
-  <h2 class="text-xl font-bold mb-4">Registrar nuevo sacramento</h2>
-
-  <form action="{{ route('sacramentos.store') }}" method="POST" class="space-y-6">
+<div class="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow">
+  <h2 class="text-2xl font-bold text-[#C1440E] mb-6">Registrar Sacramento</h2>
+  <form method="POST" action="{{ route('sacramentos.store') }}">
     @csrf
 
-    {{-- Campos comunes de sacramento --}}
-<div>
-  <label class="block text-sm font-medium mb-1">Tipo de Sacramento <span class="text-red-500">*</span></label>
-  <select id="tipo_sacramento" name="tipo_sacramento" required
-          class="w-full border rounded px-3 py-2 @error('tipo_sacramento') border-red-500 @enderror"
-          onchange="mostrarCamposEspecificos()">
-    <option value="">-- Seleccione --</option>
-    <option value="bautizo" {{ old('tipo_sacramento')=='bautizo'?'selected':'' }}>Bautizo</option>
-    <option value="comunion" {{ old('tipo_sacramento')=='comunion'?'selected':'' }}>Primera Comunión</option>
-    <option value="confirmacion" {{ old('tipo_sacramento')=='confirmacion'?'selected':'' }}>Confirmación</option>
-    <option value="matrimonio" {{ old('tipo_sacramento')=='matrimonio'?'selected':'' }}>Matrimonio</option>
-  </select>
-  @error('tipo_sacramento')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-</div>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label class="text-sm text-gray-700">Tipo de Sacramento</label>
+        <select name="tipo_sacramento" class="w-full border rounded-lg px-3 py-2">
+          <option value="">Seleccione</option>
+          <option value="bautizo">Bautizo</option>
+          <option value="comunion">Comunión</option>
+          <option value="confirmacion">Confirmación</option>
+          <option value="matrimonio">Matrimonio</option>
+        </select>
+        @error('tipo_sacramento') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+      </div>
 
-{{-- Datos comunes del sacramento --}}
-<div class="grid grid-cols-2 gap-4">
-  <div>
-    <label class="block text-sm font-medium mb-1">Fecha <span class="text-red-500">*</span></label>
-    <input type="date" name="fecha" value="{{ old('fecha') }}" required
-           class="w-full border rounded px-3 py-2 @error('fecha') border-red-500 @enderror">
-    @error('fecha')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">Hora <span class="text-red-500">*</span></label>
-    <input type="time" name="hora" value="{{ old('hora') }}" required
-           class="w-full border rounded px-3 py-2 @error('hora') border-red-500 @enderror">
-    @error('hora')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-  </div>
-</div>
+      <div>
+        <label class="text-sm text-gray-700">Fecha</label>
+        <input type="date" name="fecha" class="w-full border rounded-lg px-3 py-2">
+        @error('fecha') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+      </div>
 
-<div>
-  <label class="block text-sm font-medium mb-1">Lugar <span class="text-red-500">*</span></label>
-  <input type="text" name="lugar" value="{{ old('lugar') }}" required
-         class="w-full border rounded px-3 py-2 @error('lugar') border-red-500 @enderror">
-  @error('lugar')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-</div>
+      <div>
+        <label class="text-sm text-gray-700">Hora</label>
+        <input type="time" name="hora" class="w-full border rounded-lg px-3 py-2">
+        @error('hora') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+      </div>
 
-<div class="grid grid-cols-3 gap-4">
-  <div>
-    <label class="block text-sm font-medium mb-1">Nombre del Receptor <span class="text-red-500">*</span></label>
-    <input type="text" name="nombre_receptor" value="{{ old('nombre_receptor') }}" required
-           class="w-full border rounded px-3 py-2 @error('nombre_receptor') border-red-500 @enderror">
-    @error('nombre_receptor')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">Apellido Paterno <span class="text-red-500">*</span></label>
-    <input type="text" name="apellido_paterno" value="{{ old('apellido_paterno') }}" required
-           class="w-full border rounded px-3 py-2 @error('apellido_paterno') border-red-500 @enderror">
-    @error('apellido_paterno')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-    <input type="text" name="apellido_materno" value="{{ old('apellido_materno') }}"
-           class="w-full border rounded px-3 py-2 @error('apellido_materno') border-red-500 @enderror">
-    @error('apellido_materno')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-  </div>
-</div>
+      <div>
+        <label class="text-sm text-gray-700">Lugar</label>
+        <input type="text" name="lugar" class="w-full border rounded-lg px-3 py-2">
+        @error('lugar') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+      </div>
 
-<div class="grid grid-cols-2 gap-4">
-  <div>
-    <label class="block text-sm font-medium mb-1">Fecha de Nacimiento</label>
-    <input type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}"
-           class="w-full border rounded px-3 py-2 @error('fecha_nacimiento') border-red-500 @enderror">
-    @error('fecha_nacimiento')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">Sexo <span class="text-red-500">*</span></label>
-    <select name="sexo" required
-            class="w-full border rounded px-3 py-2 @error('sexo') border-red-500 @enderror">
-      <option value="">-- Seleccione --</option>
-      <option value="M" {{ old('sexo')=='M'?'selected':'' }}>Masculino</option>
-      <option value="F" {{ old('sexo')=='F'?'selected':'' }}>Femenino</option>
-    </select>
-    @error('sexo')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-  </div>
-</div>
+      <div>
+        <label class="text-sm text-gray-700">Iglesia</label>
+        <input type="text" name="iglesia" class="w-full border rounded-lg px-3 py-2">
+        @error('iglesia') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+      </div>
 
-    {{-- Campos específicos de Bautizo --}}
-    <div id="bautizo" class="campos-tipo-sacramento hidden">
-      <h3 class="font-medium text-lg mb-2">Datos del Bautizo</h3>
-    
-      <!-- Iglesia -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-        <label class="block text-sm font-medium mb-1">Iglesia</label>
-        <input type="text" name="iglesia" value="{{ old('iglesia') }}" class="w-full border rounded px-3 py-2">
+      <div>
+        <label class="text-sm text-gray-700">Nombre del Receptor</label>
+        <input type="text" name="nombre_receptor" class="w-full border rounded-lg px-3 py-2">
+        @error('nombre_receptor') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
       </div>
-    
-      <!-- Datos del Padre -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Datos del Padre</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre del Padre</label>
-            <input type="text" name="nombre_padre" value="{{ old('nombre_padre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-            <input type="text" name="apellido_paterno_padre" value="{{ old('apellido_paterno_padre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-            <input type="text" name="apellido_materno_padre" value="{{ old('apellido_materno_padre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-        </div>
+
+      <div>
+        <label class="text-sm text-gray-700">Apellido Paterno</label>
+        <input type="text" name="apellido_paterno" class="w-full border rounded-lg px-3 py-2">
+        @error('apellido_paterno') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
       </div>
-    
-      <!-- Datos de la Madre -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Datos de la Madre</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre de la Madre</label>
-            <input type="text" name="nombre_madre" value="{{ old('nombre_madre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-            <input type="text" name="apellido_paterno_madre" value="{{ old('apellido_paterno_madre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-            <input type="text" name="apellido_materno_madre" value="{{ old('apellido_materno_madre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-        </div>
+
+      <div>
+        <label class="text-sm text-gray-700">Apellido Materno</label>
+        <input type="text" name="apellido_materno" class="w-full border rounded-lg px-3 py-2">
+        @error('apellido_materno') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
       </div>
-    
-      <!-- Datos del Padrino -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Datos del Padrino</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre del Padrino</label>
-            <input type="text" name="nombre_padrino" value="{{ old('nombre_padrino') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-            <input type="text" name="apellido_paterno_padrino" value="{{ old('apellido_paterno_padrino') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-            <input type="text" name="apellido_materno_padrino" value="{{ old('apellido_materno_padrino') }}" class="w-full border rounded px-3 py-2">
-          </div>
-        </div>
+
+      <div>
+        <label class="text-sm text-gray-700">Fecha de Nacimiento</label>
+        <input type="date" name="fecha_nacimiento" class="w-full border rounded-lg px-3 py-2">
+        @error('fecha_nacimiento') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
       </div>
-    
-      <!-- Datos de la Madrina -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Datos de la Madrina</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre de la Madrina</label>
-            <input type="text" name="nombre_madrina" value="{{ old('nombre_madrina') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-            <input type="text" name="apellido_paterno_madrina" value="{{ old('apellido_paterno_madrina') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-            <input type="text" name="apellido_materno_madrina" value="{{ old('apellido_materno_madrina') }}" class="w-full border rounded px-3 py-2">
-          </div>
-        </div>
+
+      <div>
+        <label class="text-sm text-gray-700">Sexo</label>
+        <select name="sexo" class="w-full border rounded-lg px-3 py-2">
+          <option value="">Seleccione</option>
+          <option value="M">Masculino</option>
+          <option value="F">Femenino</option>
+        </select>
+        @error('sexo') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
       </div>
-    
-      <!-- Sacerdote celebrante -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Sacerdote Celebrante</h4>
-        <input type="text" name="sacerdote_celebrante" value="{{ old('sacerdote_celebrante') }}" class="w-full border rounded px-3 py-2">
-      </div>
+    </div>
+
+    <div class="mt-6 flex justify-between">
+      <a href="{{ route('sacramentos.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+        Cancelar
+      </a>
+      <button type="submit" class="bg-[#E9A209] text-white px-6 py-2 rounded-full shadow hover:bg-[#c98b07] transition">
+        Siguiente
+      </button>
     </div>
     
-        <div class="flex gap-2">
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar</button>
-          <a href="{{ route('sacramentos.index') }}" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Cancelar</a>
-        </div>
-
-    {{-- Campos específicos de Primera Comunión --}}
-    <div id="comunion" class="campos-tipo-sacramento hidden">
-      <h3 class="font-medium text-lg mb-2">Datos de la Primera Comunión</h3>
-
-      <!-- Iglesia -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-        <label class="block text-sm font-medium mb-1">Iglesia</label>
-        <input type="text" name="iglesia" value="{{ old('iglesia') }}" class="w-full border rounded px-3 py-2">
-      </div>
-
-      <!-- Datos del Padre -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Datos del Padre</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre del Padre</label>
-            <input type="text" name="nombre_padre" value="{{ old('nombre_padre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-            <input type="text" name="apellido_paterno_padre" value="{{ old('apellido_paterno_padre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-            <input type="text" name="apellido_materno_padre" value="{{ old('apellido_materno_padre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-        </div>
-      </div>
-
-      <!-- Datos de la Madre -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Datos de la Madre</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre de la Madre</label>
-            <input type="text" name="nombre_madre" value="{{ old('nombre_madre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-            <input type="text" name="apellido_paterno_madre" value="{{ old('apellido_paterno_madre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-            <input type="text" name="apellido_materno_madre" value="{{ old('apellido_materno_madre') }}" class="w-full border rounded px-3 py-2">
-          </div>
-        </div>
-      </div>
-
-      <!-- Datos del Padrino -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Datos del Padrino</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre del Padrino</label>
-            <input type="text" name="nombre_padrino" value="{{ old('nombre_padrino') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-            <input type="text" name="apellido_paterno_padrino" value="{{ old('apellido_paterno_padrino') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-            <input type="text" name="apellido_materno_padrino" value="{{ old('apellido_materno_padrino') }}" class="w-full border rounded px-3 py-2">
-          </div>
-        </div>
-      </div>
-
-      <!-- Datos de la Madrina -->
-      <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-        <h4 class="font-medium text-md mb-2">Datos de la Madrina</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre de la Madrina</label>
-            <input type="text" name="nombre_madrina" value="{{ old('nombre_madrina') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-            <input type="text" name="apellido_paterno_madrina" value="{{ old('apellido_paterno_madrina') }}" class="w-full border rounded px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-            <input type="text" name="apellido_materno_madrina" value="{{ old('apellido_materno_madrina') }}" class="w-full border rounded px-3 py-2">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Campos específicos para Confirmación -->
-<div id="confirmacion" class="campos-tipo-sacramento hidden">
-  <h3 class="font-medium text-lg mb-2">Datos de la Confirmación</h3>
-
-  <!-- Obispo -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-    <label class="block text-sm font-medium mb-1">Obispo</label>
-    <input type="text" name="obispo" value="{{ old('obispo') }}" class="w-full border rounded px-3 py-2">
-  </div>
-
-  <!-- Datos del Padrino -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-    <h4 class="font-medium text-md mb-2">Datos del Padrino</h4>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre del Padrino</label>
-        <input type="text" name="nombre_padrino" value="{{ old('nombre_padrino') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-        <input type="text" name="apellido_paterno_padrino" value="{{ old('apellido_paterno_padrino') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-        <input type="text" name="apellido_materno_padrino" value="{{ old('apellido_materno_padrino') }}" class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
-  </div>
-
-  <!-- Datos de la Madrina -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-    <h4 class="font-medium text-md mb-2">Datos de la Madrina</h4>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre de la Madrina</label>
-        <input type="text" name="nombre_madrina" value="{{ old('nombre_madrina') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-        <input type="text" name="apellido_paterno_madrina" value="{{ old('apellido_paterno_madrina') }}" class="w-full border rounded px-3 py-2">
-      </div>
-        <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-        <input type="text" name="apellido_materno_madrina" value="{{ old('apellido_materno_madrina') }}" class="w-full border rounded px-3 py-2">
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- Campos específicos para Matrimonio -->
-<div id="matrimonio" class="campos-tipo-sacramento hidden">
-  <h3 class="font-medium text-lg mb-2">Datos del Matrimonio</h3>
-
-  <!-- Datos del Novio -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-    <h4 class="font-medium text-md mb-2">Datos del Novio</h4>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre del Novio</label>
-        <input type="text" name="nombre_novio" value="{{ old('nombre_novio') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-        <input type="text" name="apellido_paterno_novio" value="{{ old('apellido_paterno_novio') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-        <input type="text" name="apellido_materno_novio" value="{{ old('apellido_materno_novio') }}" class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
-  </div>
-
-  <!-- Datos de la Novia -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-    <h4 class="font-medium text-md mb-2">Datos de la Novia</h4>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre de la Novia</label>
-        <input type="text" name="nombre_novia" value="{{ old('nombre_novia') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-        <input type="text" name="apellido_paterno_novia" value="{{ old('apellido_paterno_novia') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-        <input type="text" name="apellido_materno_novia" value="{{ old('apellido_materno_novia') }}" class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
-  </div>
-
-  <!-- Iglesia -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-    <label class="block text-sm font-medium mb-1">Iglesia</label>
-    <input type="text" name="iglesia" value="{{ old('iglesia') }}" class="w-full border rounded px-3 py-2">
-  </div>
-
-  <!-- Testigos -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-    <h4 class="font-medium text-md mb-2">Testigos</h4>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre del Testigo 1</label>
-        <input type="text" name="nombre_testigo1" value="{{ old('nombre_testigo1') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno Testigo 1</label>
-        <input type="text" name="apellido_paterno_testigo1" value="{{ old('apellido_paterno_testigo1') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno Testigo 1</label>
-        <input type="text" name="apellido_materno_testigo1" value="{{ old('apellido_materno_testigo1') }}" class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
-
-    <div class="grid grid-cols-2 gap-4 mt-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre del Testigo 2</label>
-        <input type="text" name="nombre_testigo2" value="{{ old('nombre_testigo2') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno Testigo 2</label>
-        <input type="text" name="apellido_paterno_testigo2" value="{{ old('apellido_paterno_testigo2') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno Testigo 2</label>
-        <input type="text" name="apellido_materno_testigo2" value="{{ old('apellido_materno_testigo2') }}" class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
-  </div>
-
-  <!-- Datos del Padrino -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-    <h4 class="font-medium text-md mb-2">Datos del Padrino</h4>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre del Padrino</label>
-        <input type="text" name="nombre_padrino" value="{{ old('nombre_padrino') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-        <input type="text" name="apellido_paterno_padrino" value="{{ old('apellido_paterno_padrino') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-        <input type="text" name="apellido_materno_padrino" value="{{ old('apellido_materno_padrino') }}" class="w-full border rounded px-3 py-2">
-      </div>
-    </div>
-  </div>
-
-  <!-- Datos de la Madrina -->
-  <div class="bg-gray-100 p-4 rounded-lg shadow-md mt-4">
-    <h4 class="font-medium text-md mb-2">Datos de la Madrina</h4>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Nombre de la Madrina</label>
-        <input type="text" name="nombre_madrina" value="{{ old('nombre_madrina') }}" class="w-full border rounded px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Apellido Paterno</label>
-        <input type="text" name="apellido_paterno_madrina" value="{{ old('apellido_paterno_madrina') }}" class="w-full border rounded px-3 py-2">
-      </div>
-        <div>
-        <label class="block text-sm font-medium mb-1">Apellido Materno</label>
-        <input type="text" name="apellido_materno_madrina" value="{{ old('apellido_materno_madrina') }}" class="w-full border rounded px-3 py-2">
-        </div>
-      </div>
-    </div>
-  </div>
   </form>
-
-  <script>
-    function mostrarCamposEspecificos() {
-      // Ocultar todos los campos específicos
-      document.querySelectorAll('.campos-tipo-sacramento').forEach(function(element) {
-        element.classList.add('hidden');
-      });
-
-      // Mostrar el campo específico dependiendo del tipo de sacramento seleccionado
-      var tipo = document.getElementById('tipo_sacramento').value;
-      if (tipo) {
-        document.getElementById(tipo).classList.remove('hidden');
-        document.getElementById('campos-especificos').classList.remove('hidden');
-      } else {
-        document.getElementById('campos-especificos').classList.add('hidden');
-      }
-    }
-  </script>
+</div>
 @endsection

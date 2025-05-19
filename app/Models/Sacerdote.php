@@ -15,6 +15,6 @@ class Sacerdote extends Model
         'apellido_paterno',
         'apellido_materno',
         'telefono',
-        'fecha_ordenacion'
+        'estipendio'
     ];
 }

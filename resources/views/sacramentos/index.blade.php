@@ -1,12 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Lista de Sacramentos')
+@section('title', 'Sacramentos')
 
 @section('content')
 <div class="mb-6 flex justify-between items-center">
-  <h2 class="text-2xl font-bold text-[#C1440E]">Sacramentos Registrados</h2>
-  <a href="{{ route('sacramentos.create') }}"
-     class="bg-[#E9A209] text-white px-5 py-2 rounded-full shadow hover:bg-[#c98b07] transition">
+  <h2 class="text-2xl font-bold text-[#C1440E]">Lista de Sacramentos</h2>
+  <a href="{{ route('sacramentos.create') }}" class="bg-[#E9A209] text-white px-5 py-2 rounded-full shadow hover:bg-[#c98b07] transition">
     + Nuevo Sacramento
   </a>
 </div>
@@ -17,37 +16,30 @@
   </div>
 @endif
 
-{{-- Tabla con fondo más transparente y scroll si excede la altura --}}
 <div class="overflow-auto max-h-[70vh] rounded-xl shadow bg-white/60">
   <table class="w-full min-w-[600px] text-[15px] text-[#573830]">
-
     <thead class="bg-white/20 text-[#C1440E] uppercase tracking-wide text-sm border-b border-[#F4A261]">
       <tr>
         <th class="text-left p-3">Tipo</th>
         <th class="text-left p-3">Fecha</th>
         <th class="text-left p-3">Hora</th>
         <th class="text-left p-3">Receptor</th>
-        <th class="text-left p-3">Sexo</th>
-        <th class="text-left p-3">Lugar</th>
         <th class="text-left p-3">Acciones</th>
       </tr>
     </thead>
-
     <tbody>
-      @foreach($sacramentos as $sacramento)
+      @foreach ($sacramentos as $sacramento)
         <tr class="border-b border-[#F4A261]/50 hover:bg-white/10 transition" x-data="{ showConfirm: false }">
-          <td class="p-3 capitalize">{{ $sacramento->tipo_sacramento }}</td>
-          <td class="p-3">{{ \Carbon\Carbon::parse($sacramento->fecha)->format('d/m/Y') }}</td>
-          <td class="p-3">{{ \Carbon\Carbon::parse($sacramento->hora)->format('H:i') }}</td>
-          <td class="p-3">{{ $sacramento->nombre_receptor }} {{ $sacramento->apellido_paterno }} {{ $sacramento->apellido_materno }}</td>
-          <td class="p-3">{{ $sacramento->sexo == 'M' ? 'Masculino' : 'Femenino' }}</td>
-          <td class="p-3">{{ $sacramento->lugar }}</td>
-          <td class="p-3 flex gap-2 flex-wrap">
-            <a href="{{ route('sacramentos.show', $sacramento) }}"
-               class="bg-[#F4A261] text-white px-4 py-1 rounded-full text-sm hover:bg-[#dd843f] transition">
+          <td class="p-3">{{ ucfirst($sacramento->tipo_sacramento) }}</td>
+          <td class="p-3">{{ $sacramento->fecha }}</td>
+          <td class="p-3">{{ $sacramento->hora }}</td>
+          <td class="p-3">{{ $sacramento->nombre_receptor }} {{ $sacramento->apellido_paterno }}</td>
+          <td class="p-3 flex gap-2">
+            <a href="{{ route('sacramentos.show', ['sacramento' => $sacramento]) }}"
+               class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm hover:bg-blue-700 transition">
               Ver
             </a>
-            <a href="{{ route('sacramentos.edit', $sacramento->id_sacramento) }}"  {{-- Aquí cambiamos el enlace a la ruta correcta --}}
+            <a href="{{ route('sacramentos.edit', ['sacramento' => $sacramento]) }}"
                class="bg-[#E9A209] text-white px-4 py-1 rounded-full text-sm hover:bg-[#c98b07] transition">
               Editar
             </a>
@@ -56,7 +48,7 @@
               Eliminar
             </button>
 
-            {{-- Modal --}}
+            <!-- Modal de confirmación -->
             <div x-show="showConfirm" x-cloak x-transition
                  class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
               <div class="bg-white/90 rounded-xl shadow-xl p-6 w-full max-w-sm text-center text-[#573830]">
@@ -67,9 +59,8 @@
                           class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
                     Cancelar
                   </button>
-                  <form action="{{ route('sacramentos.destroy', $sacramento) }}" method="POST">
-                    @csrf
-                    @method('DELETE')
+                  <form action="{{ route('sacramentos.destroy', ['sacramento' => $sacramento]) }}" method="POST">
+                    @csrf @method('DELETE')
                     <button type="submit"
                             class="bg-[#C1440E] text-white px-4 py-2 rounded-lg hover:bg-[#a8390b] transition">
                       Eliminar
@@ -78,12 +69,10 @@
                 </div>
               </div>
             </div>
-
           </td>
         </tr>
       @endforeach
     </tbody>
-
   </table>
 </div>
 @endsection

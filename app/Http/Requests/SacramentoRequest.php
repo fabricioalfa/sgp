@@ -1,36 +1,48 @@
 <?php
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
 class SacramentoRequest extends FormRequest
 {
-    public function authorize()
+    /**
+     * Determinar si el usuario está autorizado para hacer esta solicitud.
+     */
+    public function authorize(): bool
     {
         return true;
     }
 
-    public function rules()
+    /**
+     * Obtener las reglas de validación que se aplican a la solicitud.
+     */
+    public function rules(): array
     {
         return [
             'tipo_sacramento'    => 'required|in:bautizo,comunion,confirmacion,matrimonio',
             'fecha'              => 'required|date',
-            'hora'               => 'required|date_format:H:i',
+            'hora'               => 'required',
             'lugar'              => 'required|string|max:100',
+            'iglesia'            => 'required|string|max:100',  // Campo iglesia agregado
             'nombre_receptor'    => 'required|string|max:100',
             'apellido_paterno'   => 'required|string|max:100',
-            'apellido_materno'   => 'required|string|max:100',
-            'fecha_nacimiento'   => 'required|date',
+            'apellido_materno'   => 'nullable|string|max:100',
+            'fecha_nacimiento'   => 'nullable|date',
             'sexo'               => 'required|in:M,F',
         ];
     }
 
-    public function messages()
+    /**
+     * Mensajes personalizados para los errores de validación.
+     */
+    public function messages(): array
     {
         return [
             'required' => 'Este campo es obligatorio.',
-            'in' => 'El valor seleccionado no es válido.',
-            'date_format' => 'El formato de hora debe ser HH:mm.',
+            'max' => 'Máximo :max caracteres.',
+            'in' => 'Valor no permitido.',
+            'date' => 'Debe ser una fecha válida.',
         ];
     }
 }

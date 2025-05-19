@@ -2,281 +2,115 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Sacramento;
-use App\Models\Bautizo;
-use App\Models\PrimeraComunion;
-use App\Models\Confirmacion;
-use App\Models\Matrimonio;
+use App\Models\Fiel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SacramentoController extends Controller
 {
-    /**
-     * Mostrar todos los sacramentos
-     */
     public function index()
     {
         $sacramentos = Sacramento::orderBy('fecha', 'desc')->get();
         return view('sacramentos.index', compact('sacramentos'));
     }
 
-    /**
-     * Formulario de creación de sacramento
-     */
     public function create()
     {
         return view('sacramentos.create');
     }
 
-    /**
-     * Guardar nuevo sacramento con verificación de conflictos de horario
-     */
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'tipo_sacramento'    => 'required|in:bautizo,comunion,confirmacion,matrimonio',
             'fecha'              => 'required|date',
             'hora'               => 'required',
-            'lugar'              => 'required|string|max:100',
+            'lugar'              => 'required|string|max:255',
+            'iglesia'            => 'required|string|max:255',
             'nombre_receptor'    => 'required|string|max:100',
-            'apellido_paterno'   => 'required|string|max:100',
+            'apellido_paterno'   => 'nullable|string|max:100',
             'apellido_materno'   => 'nullable|string|max:100',
-            'fecha_nacimiento'   => 'nullable|date',
+            'fecha_nacimiento'   => 'required|date',
             'sexo'               => 'required|in:M,F',
         ]);
 
-        $fecha = $request->fecha;
-        $hora  = $request->hora;
+        $data['id_usuario_registro'] = session('usuario')->id_usuario;
 
-        // Conflicto con misa
-        $conflictoMisa = DB::table('misas')
-            ->where('fecha', $fecha)
-            ->where('hora', $hora)
-            ->exists();
+        $sacramento = Sacramento::create($data);
 
-        // Conflicto con otro sacramento
-        $conflictoSac = Sacramento::where('fecha', $fecha)
-            ->where('hora', $hora)
-            ->exists();
-
-        if ($conflictoMisa || $conflictoSac) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'hora' => "Ya existe una celebración (misa o sacramento) el "
-                             . Carbon::parse($fecha)->format('d/m/Y')
-                             . " a las $hora."
-                ]);
-        }
-
-        // Crear sacramento base
-        $sacramento = Sacramento::create([
-            'tipo_sacramento'     => $request->tipo_sacramento,
-            'fecha'               => $fecha,
-            'hora'                => $hora,
-            'lugar'               => $request->lugar,
-            'nombre_receptor'     => $request->nombre_receptor,
-            'apellido_paterno'    => $request->apellido_paterno,
-            'apellido_materno'    => $request->apellido_materno,
-            'fecha_nacimiento'    => $request->fecha_nacimiento,
-            'sexo'                => $request->sexo,
-            'id_usuario_registro' => session('usuario')->id_usuario,
-        ]);
-
-        // Crear registro específico según tipo
-        switch ($request->tipo_sacramento) {
-            case 'bautizo':
-                Bautizo::create(array_merge(
-                    ['id_sacramento' => $sacramento->id_sacramento],
-                    $request->only([
-                        'iglesia',
-                        'nombre_padre', 'apellido_paterno_padre', 'apellido_materno_padre',
-                        'nombre_madre', 'apellido_paterno_madre', 'apellido_materno_madre',
-                        'nombre_padrino', 'apellido_paterno_padrino', 'apellido_materno_padrino',
-                        'nombre_madrina', 'apellido_paterno_madrina', 'apellido_materno_madrina',
-                        'sacerdote_celebrante'
-                    ])
-                ));
-                break;
-
-            case 'comunion':
-                PrimeraComunion::create(array_merge(
-                    ['id_sacramento' => $sacramento->id_sacramento],
-                    $request->only([
-                        'iglesia',
-                        'nombre_padre', 'apellido_paterno_padre', 'apellido_materno_padre',
-                        'nombre_madre', 'apellido_paterno_madre', 'apellido_materno_madre',
-                        'nombre_padrino', 'apellido_paterno_padrino', 'apellido_materno_padrino',
-                        'nombre_madrina', 'apellido_paterno_madrina', 'apellido_materno_madrina'
-                    ])
-                ));
-                break;
-
-            case 'confirmacion':
-                Confirmacion::create(array_merge(
-                    ['id_sacramento' => $sacramento->id_sacramento],
-                    $request->only([
-                        'obispo',
-                        'nombre_padrino', 'apellido_paterno_padrino', 'apellido_materno_padrino',
-                        'nombre_madrina', 'apellido_paterno_madrina', 'apellido_materno_madrina'
-                    ])
-                ));
-                break;
-
-            case 'matrimonio':
-                Matrimonio::create(array_merge(
-                    ['id_sacramento' => $sacramento->id_sacramento],
-                    $request->only([
-                        'nombre_novio', 'apellido_paterno_novio', 'apellido_materno_novio',
-                        'nombre_novia', 'apellido_paterno_novia', 'apellido_materno_novia',
-                        'iglesia',
-                        'nombre_testigo1', 'apellido_paterno_testigo1', 'apellido_materno_testigo1',
-                        'nombre_testigo2', 'apellido_paterno_testigo2', 'apellido_materno_testigo2',
-                        'nombre_padrino', 'apellido_paterno_padrino', 'apellido_materno_padrino',
-                        'nombre_madrina', 'apellido_paterno_madrina', 'apellido_materno_madrina'
-                    ])
-                ));
-                break;
-        }
-
-        return redirect()
-            ->route('sacramentos.index')
-            ->with('success', 'Sacramento registrado correctamente.');
+        return redirect()->route('sacramentos.fieles', $sacramento);
     }
 
-    /**
-     * Mostrar un sacramento
-     */
+    public function fielesForm(Sacramento $sacramento)
+    {
+        return view('sacramentos.fieles', compact('sacramento'));
+    }
+
+    public function storeFieles(Request $request, Sacramento $sacramento)
+    {
+        $validated = $request->validate([
+            'fieles.*.nombres'           => 'required|string|max:100',
+            'fieles.*.apellido_paterno' => 'nullable|string|max:100',
+            'fieles.*.apellido_materno' => 'nullable|string|max:100',
+            'fieles.*.tipo_fiel'        => 'required|in:padrino,madrina,testigo,padre,madre',
+        ]);
+
+        foreach ($validated['fieles'] as $fiel) {
+            $sacramento->fieles()->create($fiel);
+        }
+
+        return redirect()->route('sacramentos.recibo', $sacramento);
+    }
+
+    public function mostrarRecibo(Sacramento $sacramento)
+    {
+        $fieles = $sacramento->fieles;
+
+        if (in_array($sacramento->tipo_sacramento, ['bautizo', 'matrimonio'])) {
+            $pdf = Pdf::loadView('sacramentos.recibo_pdf', compact('sacramento', 'fieles'));
+            return view('sacramentos.descarga', ['pdf' => $pdf->output()]);
+        }
+
+        return redirect()->route('sacramentos.index');
+    }
+
     public function show(Sacramento $sacramento)
     {
         return view('sacramentos.show', compact('sacramento'));
     }
 
-    /**
-     * Formulario de edición de sacramento
-     */
     public function edit(Sacramento $sacramento)
     {
         return view('sacramentos.edit', compact('sacramento'));
     }
 
-    /**
-     * Actualizar sacramento con verificación de conflictos de horario
-     */
     public function update(Request $request, Sacramento $sacramento)
     {
-        $request->validate([
+        $data = $request->validate([
             'tipo_sacramento'    => 'required|in:bautizo,comunion,confirmacion,matrimonio',
             'fecha'              => 'required|date',
             'hora'               => 'required',
-            'lugar'              => 'required|string|max:100',
+            'lugar'              => 'required|string|max:255',
+            'iglesia'            => 'required|string|max:255',
             'nombre_receptor'    => 'required|string|max:100',
-            'apellido_paterno'   => 'required|string|max:100',
+            'apellido_paterno'   => 'nullable|string|max:100',
             'apellido_materno'   => 'nullable|string|max:100',
-            'fecha_nacimiento'   => 'nullable|date',
+            'fecha_nacimiento'   => 'required|date',
             'sexo'               => 'required|in:M,F',
         ]);
 
-        $fecha = $request->fecha;
-        $hora  = $request->hora;
+        $sacramento->update($data);
 
-        // Conflicto con misa
-        $conflictoMisa = DB::table('misas')
-            ->where('fecha', $fecha)
-            ->where('hora', $hora)
-            ->exists();
-
-        // Conflicto con otro sacramento distinto al actual
-        $conflictoSac = Sacramento::where('fecha', $fecha)
-            ->where('hora', $hora)
-            ->where('id_sacramento', '!=', $sacramento->id_sacramento)
-            ->exists();
-
-        if ($conflictoMisa || $conflictoSac) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'hora' => "Ya existe una celebración (misa o sacramento) en esa fecha y hora."
-                ]);
-        }
-
-        // Actualizar sacramento base
-        $sacramento->update($request->only([
-            'tipo_sacramento',
-            'fecha',
-            'hora',
-            'lugar',
-            'nombre_receptor',
-            'apellido_paterno',
-            'apellido_materno',
-            'fecha_nacimiento',
-            'sexo',
-        ]));
-
-        // Actualizar datos específicos
-        switch ($request->tipo_sacramento) {
-            case 'bautizo':
-                $sacramento->bautizo()->update($request->only([
-                    'iglesia',
-                    'nombre_padre', 'apellido_paterno_padre', 'apellido_materno_padre',
-                    'nombre_madre', 'apellido_paterno_madre', 'apellido_materno_madre',
-                    'nombre_padrino', 'apellido_paterno_padrino', 'apellido_materno_padrino',
-                    'nombre_madrina', 'apellido_paterno_madrina', 'apellido_materno_madrina',
-                    'sacerdote_celebrante'
-                ]));
-                break;
-
-            case 'comunion':
-                $sacramento->comunion()->update($request->only([
-                    'iglesia',
-                    'nombre_padre', 'apellido_paterno_padre', 'apellido_materno_padre',
-                    'nombre_madre', 'apellido_paterno_madre', 'apellido_materno_madre',
-                    'nombre_padrino', 'apellido_paterno_padrino', 'apellido_materno_padrino',
-                    'nombre_madrina', 'apellido_paterno_madrina', 'apellido_materno_madrina'
-                ]));
-                break;
-
-            case 'confirmacion':
-                $sacramento->confirmacion()->update($request->only([
-                    'obispo',
-                    'nombre_padrino', 'apellido_paterno_padrino', 'apellido_materno_padrino',
-                    'nombre_madrina', 'apellido_paterno_madrina', 'apellido_materno_madrina'
-                ]));
-                break;
-
-            case 'matrimonio':
-                $sacramento->matrimonio()->update($request->only([
-                    'nombre_novio', 'apellido_paterno_novio', 'apellido_materno_novio',
-                    'nombre_novia', 'apellido_paterno_novia', 'apellido_materno_novia',
-                    'iglesia',
-                    'nombre_testigo1', 'apellido_paterno_testigo1', 'apellido_materno_testigo1',
-                    'nombre_testigo2', 'apellido_paterno_testigo2', 'apellido_materno_testigo2',
-                    'nombre_padrino', 'apellido_paterno_padrino', 'apellido_materno_padrino',
-                    'nombre_madrina', 'apellido_paterno_madrina', 'apellido_materno_madrina'
-                ])); 
-                break;
-        }
-
-        return redirect()
-            ->route('sacramentos.index')
-            ->with('success', 'Sacramento actualizado correctamente.');
+        return redirect()->route('sacramentos.index')->with('success', 'Sacramento actualizado correctamente.');
     }
 
-    /**
-     * Eliminar sacramento y sus registros asociados
-     */
     public function destroy(Sacramento $sacramento)
     {
-        $sacramento->bautizo()->delete();
-        $sacramento->comunion()->delete();
-        $sacramento->confirmacion()->delete();
-        $sacramento->matrimonio()->delete();
+        $sacramento->fieles()->delete();
         $sacramento->delete();
 
-        return redirect()
-            ->route('sacramentos.index')
-            ->with('success', 'Sacramento eliminado correctamente.');
+        return redirect()->route('sacramentos.index')->with('success', 'Sacramento eliminado correctamente.');
     }
 }

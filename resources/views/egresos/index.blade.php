@@ -23,11 +23,11 @@
     <form action="{{ route('egresos.informe') }}" method="GET" target="_blank" class="flex gap-4 mb-6">
       <div>
         <label for="fecha_inicio" class="block text-sm font-medium mb-1">Fecha de Inicio</label>
-        <input type="date" name="fecha_inicio" value="{{ request()->fecha_inicio }}" class="w-48 border rounded px-3 py-2">
+        <input type="date" name="fecha_inicio" value="{{ request()->fecha_inicio }}" required class="w-48 border rounded px-3 py-2">
       </div>
       <div>
         <label for="fecha_fin" class="block text-sm font-medium mb-1">Fecha de Fin</label>
-        <input type="date" name="fecha_fin" value="{{ request()->fecha_fin }}" class="w-48 border rounded px-3 py-2">
+        <input type="date" name="fecha_fin" value="{{ request()->fecha_fin }}" required class="w-48 border rounded px-3 py-2">
       </div>
       <div>
         <!-- El botón enviará el formulario y abrirá el informe en una nueva pestaña -->

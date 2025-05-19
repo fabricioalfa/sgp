@@ -1,20 +1,19 @@
 <?php
-// app/Http/Controllers/MisaController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Misa;
 use App\Models\Sacerdote;
 use App\Models\Egreso;
-use App\Http\Requests\MisaRequest;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Requests\MisaRequest;
 use Carbon\Carbon;
 
 class MisaController extends Controller
 {
     public function index()
     {
-        // Marcar como celebrada las misas pasadas
         Misa::whereDate('fecha', '<', Carbon::today())
             ->whereNotIn('estado', ['celebrada', 'cancelada'])
             ->update(['estado' => 'celebrada']);
@@ -36,7 +35,6 @@ class MisaController extends Controller
     {
         $data = $request->validated();
 
-        // Definir estipendios
         $estipendios = [
             'MISA DE DIFUNTOS COMUNITARIAS'      => 20,
             'MISA DE CUERPO PRESENTE'            => 100,
@@ -49,13 +47,11 @@ class MisaController extends Controller
         $tipoKey    = strtoupper(trim($data['tipo_misa']));
         $estipendio = $estipendios[$tipoKey] ?? 0;
 
-        // Crear misa
         $misa = Misa::create(array_merge($data, [
             'id_usuario_registro' => session('usuario')->id_usuario,
             'estipendio'          => $estipendio,
         ]));
 
-        // Registrar ingreso financiero
         DB::table('ingresos')->insert([
             'tipo_ingreso'        => 'misa',
             'monto'               => $estipendio,
@@ -66,9 +62,7 @@ class MisaController extends Controller
             'updated_at'          => now(),
         ]);
 
-        return redirect()
-            ->route('misas.index')
-            ->with('success', 'Misa registrada y estipendio ingresado correctamente.');
+        return redirect()->route('misas.recibo', $misa);
     }
 
     public function edit(Misa $misa)
@@ -81,7 +75,6 @@ class MisaController extends Controller
     {
         $data = $request->validated();
 
-        // Recalcular estipendio
         $estipendios = [
             'MISA DE DIFUNTOS COMUNITARIAS'      => 20,
             'MISA DE CUERPO PRESENTE'            => 100,
@@ -94,12 +87,10 @@ class MisaController extends Controller
         $tipoKey    = strtoupper(trim($data['tipo_misa']));
         $estipendio = $estipendios[$tipoKey] ?? 0;
 
-        // Actualizar misa
         $misa->update(array_merge($data, [
             'estipendio' => $estipendio,
         ]));
 
-        // Si se cancela, registrar egreso con categoría
         if ($data['estado'] === 'cancelada') {
             Egreso::create([
                 'tipo_egreso'         => 'misa_cancelada',
@@ -123,5 +114,11 @@ class MisaController extends Controller
         return redirect()
             ->route('misas.index')
             ->with('success', 'Misa eliminada correctamente.');
+    }
+
+    public function recibo(Misa $misa)
+    {
+        $pdf = Pdf::loadView('misas.recibo-pdf', compact('misa'));
+        return view('misas.recibo', ['pdf' => $pdf->output()]);
     }
 }

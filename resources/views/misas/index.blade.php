@@ -37,7 +37,11 @@
             <td class="p-3">{{ $misa->tipo_misa ?? '-' }}</td>
             <td class="p-3">{{ $misa->sacerdote->nombres ?? 'Sin asignar' }}</td>
             <td class="p-3">{{ ucfirst($misa->estado) }}</td>
-            <td class="p-3 flex gap-2">
+            <td class="p-3 flex gap-2 flex-wrap">
+              <a href="{{ route('misas.recibo', $misa) }}"
+                 class="bg-blue-600 text-white px-4 py-1 rounded-full text-sm hover:bg-blue-800 transition">
+                Generar Recibo
+              </a>
               <a href="{{ route('misas.edit', $misa) }}"
                  class="bg-[#E9A209] text-white px-4 py-1 rounded-full text-sm hover:bg-[#c98b07] transition">
                 Editar
@@ -46,7 +50,7 @@
                       class="bg-[#C1440E] text-white px-4 py-1 rounded-full text-sm hover:bg-[#a8390b] transition">
                 Eliminar
               </button>
-              {{-- Modal --}}
+              <!-- Modal -->
               <div x-show="showConfirm" x-cloak x-transition
                    class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
                 <div class="bg-white/90 rounded-xl shadow-xl p-6 w-full max-w-sm text-center text-[#573830]">
@@ -72,6 +76,5 @@
         @endforeach
       </tbody>
     </table>
-    
   </div>
 @endsection

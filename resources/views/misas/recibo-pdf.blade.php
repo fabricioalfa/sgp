@@ -1,78 +1,35 @@
-<!-- resources/views/misas/recibo-pdf.blade.php -->
-
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Recibo de Misa</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            color: #C1440E;
-            font-size: 24px;
-        }
-
-        .details {
-            margin-bottom: 20px;
-        }
-
-        .details th,
-        .details td {
-            padding: 8px;
-            text-align: left;
-        }
-
-        .details th {
-            background-color: #F4A261;
-            color: white;
-        }
-
-        .footer {
-            margin-top: 40px;
-            text-align: center;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>Recibo de Misa</title>
+  <style>
+    body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
+    .header { text-align: center; font-weight: bold; margin-bottom: 20px; }
+    .section { margin-bottom: 10px; }
+    .label { font-weight: bold; }
+  </style>
 </head>
 <body>
+  <div class="header">RECIBO DE MISA</div>
 
-    <div class="header">
-        <h1>Recibo de Misa</h1>
-        <p>Fecha: {{ \Carbon\Carbon::parse($misa->fecha)->format('d/m/Y') }}</p>
-        <p>Hora: {{ $misa->hora }}</p>
-    </div>
+  <div class="section">
+    <span class="label">Tipo de Misa:</span> {{ $misa->tipo_misa }}
+  </div>
+  <div class="section">
+    <span class="label">Fecha:</span> {{ $misa->fecha }} {{ $misa->hora }}
+  </div>
+  <div class="section">
+    <span class="label">Sacerdote:</span> {{ $misa->sacerdote->nombres ?? 'No asignado' }}
+  </div>
+  <div class="section">
+    <span class="label">Estipendio:</span> Bs {{ number_format($misa->estipendio, 2) }}
+  </div>
 
-    <table class="details" width="100%">
-        <tr>
-            <th>Tipo de Misa</th>
-            <td>{{ $misa->tipo_misa }}</td>
-        </tr>
-        <tr>
-            <th>Intención</th>
-            <td>{{ $misa->intencion ?? 'N/A' }}</td>
-        </tr>
-        <tr>
-            <th>Sacerdote</th>
-            <td>{{ $misa->sacerdote->nombres }}</td>
-        </tr>
-        <tr>
-            <th>Estado</th>
-            <td>{{ $misa->estado }}</td>
-        </tr>
-    </table>
+  <hr>
 
-    <div class="footer">
-        <p>Gracias por su apoyo.</p>
-    </div>
-
+  <div class="section" style="margin-top: 40px; text-align: right;">
+    <em>Emitido el {{ now()->format('d/m/Y H:i') }}</em>
+  </div>
 </body>
 </html>

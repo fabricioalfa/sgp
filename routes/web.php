@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PerfilController; // Ensure this file exists in the specified namespace
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\SacramentoController;
 use App\Http\Controllers\BautizoController;
@@ -18,78 +18,60 @@ use App\Http\Controllers\FinanzasController;
 use App\Http\Controllers\RrhhController;
 use App\Http\Controllers\SacerdoteController;
 use App\Http\Controllers\CebController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PanelController;
 use App\Http\Middleware\CheckSession;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\SecretarioMiddleware;
-use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\PanelController;
-use Illuminate\Http\Request;
+
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-
-// Procesar login y logout
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// 🔐 Rutas protegidas por sesión
 Route::middleware([CheckSession::class])->group(function () {
-    Route::get('/panel', [AuthController::class, 'panel'])->name('panel');
-
-    // ✅ Rutas para perfil (Ver perfil y Cambiar contraseña)
-    Route::middleware([CheckSession::class])->group(function () {
-        Route::get('/panel', [PanelController::class, 'index'])->name('panel');
-        
-       // Panel principal y perfil del usuario
     Route::get('/panel', [PanelController::class, 'index'])->name('panel');
 
-    // Rutas para cambiar la contraseña
+    // Perfil del usuario (cambio de datos y contraseña)
+    Route::get('/perfil/editar', [PerfilController::class, 'editar'])->name('perfil.editar');
+    Route::post('/perfil/actualizar', [PerfilController::class, 'actualizar'])->name('perfil.actualizar');
     Route::get('/perfil/cambiar-contraseña', [PanelController::class, 'showChangePassword'])->name('perfil.cambiar-contrasena');
     Route::post('/perfil/cambiar-contraseña', [PanelController::class, 'updatePassword'])->name('perfil.cambiar-contrasena.update');
-    });
 
-    // ✅ Rutas solo para ADMINISTRADOR
+    // ADMINISTRADOR
     Route::middleware([AdminMiddleware::class])->group(function () {
+        
         Route::resource('/usuarios', UsuarioController::class);
         Route::resource('/rrhh', RrhhController::class);
         Route::resource('finanzas', FinanzasController::class);
-        Route::resource('sacramentos', SacramentoController::class); 
-    }); 
+        Route::resource('sacramentos', SacramentoController::class);
+    });
 
-    // ✅ Rutas solo para SECRETARIO
+    // SECRETARIO
     Route::middleware([SecretarioMiddleware::class])->group(function () {
+        
         Route::resource('finanzas', FinanzasController::class);
-        // Definir la ruta para el reporte de finanzas
         Route::get('/finanzas/reporte', [FinanzasController::class, 'generateReport'])->name('finanzas.reporte');
-
-
 
         Route::resource('/ingresos', IngresoController::class);
         Route::get('/ingresos/{ingreso}/generateRecibo', [IngresoController::class, 'generateRecibo'])->name('ingresos.generateRecibo');
-        Route::get('/egresos/informe', [EgresoController::class, 'generarInforme'])->name('egresos.informe');
 
-        Route::resource('/egresos', EgresoController::class);  
+        Route::get('/egresos/informe', [EgresoController::class, 'generarInforme'])->name('egresos.informe');
+        Route::resource('/egresos', EgresoController::class);
+
         Route::resource('/sacerdotes', SacerdoteController::class);
         Route::resource('/cebs', CebController::class);
         Route::resource('misas', MisaController::class);
-        Route::get('misas/{misa}/verRecibo', [MisaController::class, 'verRecibo'])->name('misas.verRecibo');
-        Route::post('/eliminar-archivo', function (Request $request) {
-            $filePath = $request->input('filePath');
-        
-            if (file_exists($filePath)) {
-                unlink($filePath);  // Eliminar el archivo
-                return response()->json(['status' => 'ok']);
-            }
-        
-            return response()->json(['status' => 'error'], 400);
-        });
+        Route::get('misas/{misa}/recibo', [MisaController::class, 'recibo'])->name('misas.recibo');
 
-        Route::resource('/actividades', ActividadController::class) -> parameters(['actividades' => 'actividad']);
-        Route::resource('/sacramentos', SacramentoController::class);
-        Route::resource('/bautizos', BautizoController::class);
-        Route::resource('/comuniones', ComunionController::class);
-        Route::resource('/confirmaciones', ConfirmacionController::class);
-        Route::resource('/matrimonios', MatrimonioController::class);
+        Route::resource('/actividades', ActividadController::class)->parameters(['actividades' => 'actividad']);
+        Route::resource('sacramentos', SacramentoController::class);
+
+        Route::get('sacramentos/{sacramento}/fieles', [SacramentoController::class, 'fielesForm'])->name('sacramentos.fieles');
+        Route::post('sacramentos/{sacramento}/fieles', [SacramentoController::class, 'storeFieles'])->name('sacramentos.fieles.store');
+        Route::get('sacramentos/{sacramento}/recibo', [SacramentoController::class, 'mostrarRecibo'])->name('sacramentos.recibo');
+
         Route::get('/certificados', [CertificadoController::class, 'index'])->name('certificados.index');
         Route::get('/certificados/crear', [CertificadoController::class, 'create'])->name('certificados.create');
         Route::post('/certificados', [CertificadoController::class, 'store'])->name('certificados.store');
