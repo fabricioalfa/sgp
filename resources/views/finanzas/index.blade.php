@@ -1,11 +1,16 @@
-<!-- resources/views/finanzas/index.blade.php -->
-
 @extends('layouts.app')
 
 @section('title', 'Balance de Finanzas')
 
 @section('content')
   <h2 class="text-xl font-bold mb-4">Balance de Finanzas</h2>
+
+  <!-- Botón Generar Reporte arriba -->
+  <div class="flex justify-end mb-4">
+    <a href="{{ route('finanzas.reporte') }}" target="_blank" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+        Generar Reporte
+    </a>
+  </div>
 
   <!-- Filtros de búsqueda -->
   <div class="mb-6 flex justify-center items-center gap-4">
@@ -115,13 +120,4 @@
       </table>
     </div>
   </div>
-
-
-<div class="mt-6 text-center">
-  <a href="{{ route('finanzas.reporte') }}" target="_blank" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-      Generar Reporte
-  </a>
-</div>
-
-
 @endsection
