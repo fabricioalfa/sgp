@@ -1,3 +1,4 @@
+<!-- resources/views/sacerdotes/index.blade.php -->
 @extends('layouts.app')
 
 @section('title', 'Lista de Sacerdotes')
@@ -17,7 +18,6 @@
   </div>
 @endif
 
-{{-- Tabla con fondo más transparente y scroll si excede la altura --}}
 <div class="overflow-auto max-h-[70vh] rounded-xl shadow bg-white/60">
   <table class="w-full min-w-[600px] text-[15px] text-[#573830]">
 
@@ -27,7 +27,7 @@
         <th class="text-left p-3">Apellido Paterno</th>
         <th class="text-left p-3">Apellido Materno</th>
         <th class="text-left p-3">Teléfono</th>
-        <th class="text-left p-3">Fecha Ordenación</th>
+        <th class="text-left p-3">Estipendio</th>
         <th class="text-left p-3">Acciones</th>
       </tr>
     </thead>
@@ -39,9 +39,7 @@
           <td class="p-3">{{ $sacerdote->apellido_paterno }}</td>
           <td class="p-3">{{ $sacerdote->apellido_materno }}</td>
           <td class="p-3">{{ $sacerdote->telefono ?? 'N/A' }}</td>
-          <td class="p-3">
-            {{ $sacerdote->fecha_ordenacion ? \Carbon\Carbon::parse($sacerdote->fecha_ordenacion)->format('d/m/Y') : 'N/A' }}
-          </td>
+          <td class="p-3">{{ number_format($sacerdote->estipendio, 2, ',', '.') }}</td>
           <td class="p-3 flex flex-wrap gap-2">
             <a href="{{ route('sacerdotes.edit', $sacerdote->id_sacerdote) }}"
                class="bg-[#E9A209] text-white px-4 py-1 rounded-full text-sm hover:bg-[#c98b07] transition">
@@ -52,7 +50,6 @@
               Eliminar
             </button>
 
-            {{-- Modal --}}
             <div x-show="showConfirm" x-cloak x-transition
                  class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
               <div class="bg-white/90 rounded-xl shadow-xl p-6 w-full max-w-sm text-center text-[#573830]">

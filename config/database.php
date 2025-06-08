@@ -60,6 +60,14 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => [
+                'dump_command_path' => 'C:/xampp/mysql/bin',
+                // En Windows, basta con apuntar al directorio. DbDumper agregará 'mysqldump.exe'.
+                // Si lo deseas puedes también aumentar el timeout:
+                // 'dump_command_timeout' => 60 * 5,
+                // O bien excluir tablas específicas:
+                // 'exclude_tables' => ['tabla_que_quieres_excluir'],
+            ],
         ],
 
         'mariadb' => [

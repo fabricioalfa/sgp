@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Sacramento;
 use App\Models\Fiel;
+use App\Models\Misa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class SacramentoController extends Controller
@@ -24,20 +24,33 @@ class SacramentoController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'tipo_sacramento'    => 'required|in:bautizo,comunion,confirmacion,matrimonio',
-            'fecha'              => 'required|date',
-            'hora'               => 'required',
-            'lugar'              => 'required|string|max:255',
-            'iglesia'            => 'required|string|max:255',
-            'nombre_receptor'    => 'required|string|max:100',
-            'apellido_paterno'   => 'nullable|string|max:100',
-            'apellido_materno'   => 'nullable|string|max:100',
-            'fecha_nacimiento'   => 'required|date',
-            'sexo'               => 'required|in:M,F',
+            'tipo_sacramento'  => 'required|in:bautizo,comunion,confirmacion,matrimonio',
+            'fecha'            => 'required|date',
+            'hora'             => 'required',
+            'lugar'            => 'required|string|max:255',
+            'iglesia'          => 'required|string|max:255',
+            'nombre_receptor'  => 'required|string|max:100',
+            'apellido_paterno' => 'nullable|string|max:100',
+            'apellido_materno' => 'nullable|string|max:100',
+            'fecha_nacimiento' => 'required|date',
+            'sexo'             => 'required|in:M,F',
         ]);
 
-        $data['id_usuario_registro'] = session('usuario')->id_usuario;
+        // 1. Verificar solapamiento con otra Misa o Sacramento
+        $conflictMisa = Misa::where('fecha', $data['fecha'])
+                           ->where('hora', $data['hora'])
+                           ->exists();
+        $conflictSac = Sacramento::where('fecha', $data['fecha'])
+                                 ->where('hora', $data['hora'])
+                                 ->exists();
+        if ($conflictMisa || $conflictSac) {
+            return back()
+                ->withInput()
+                ->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
+        }
 
+        // 2. Crear sacramento
+        $data['id_usuario_registro'] = session('usuario')->id_usuario;
         $sacramento = Sacramento::create($data);
 
         return redirect()->route('sacramentos.fieles', $sacramento);
@@ -52,9 +65,9 @@ class SacramentoController extends Controller
     {
         $validated = $request->validate([
             'fieles.*.nombres'           => 'required|string|max:100',
-            'fieles.*.apellido_paterno' => 'nullable|string|max:100',
-            'fieles.*.apellido_materno' => 'nullable|string|max:100',
-            'fieles.*.tipo_fiel'        => 'required|in:padrino,madrina,testigo,padre,madre',
+            'fieles.*.apellido_paterno'  => 'nullable|string|max:100',
+            'fieles.*.apellido_materno'  => 'nullable|string|max:100',
+            'fieles.*.tipo_fiel'         => 'required|in:padrino,madrina,testigo,padre,madre',
         ]);
 
         foreach ($validated['fieles'] as $fiel) {
@@ -89,21 +102,38 @@ class SacramentoController extends Controller
     public function update(Request $request, Sacramento $sacramento)
     {
         $data = $request->validate([
-            'tipo_sacramento'    => 'required|in:bautizo,comunion,confirmacion,matrimonio',
-            'fecha'              => 'required|date',
-            'hora'               => 'required',
-            'lugar'              => 'required|string|max:255',
-            'iglesia'            => 'required|string|max:255',
-            'nombre_receptor'    => 'required|string|max:100',
-            'apellido_paterno'   => 'nullable|string|max:100',
-            'apellido_materno'   => 'nullable|string|max:100',
-            'fecha_nacimiento'   => 'required|date',
-            'sexo'               => 'required|in:M,F',
+            'tipo_sacramento'  => 'required|in:bautizo,comunion,confirmacion,matrimonio',
+            'fecha'            => 'required|date',
+            'hora'             => 'required',
+            'lugar'            => 'required|string|max:255',
+            'iglesia'          => 'required|string|max:255',
+            'nombre_receptor'  => 'required|string|max:100',
+            'apellido_paterno' => 'nullable|string|max:100',
+            'apellido_materno' => 'nullable|string|max:100',
+            'fecha_nacimiento' => 'required|date',
+            'sexo'             => 'required|in:M,F',
         ]);
 
+        // 1. Verificar solapamiento (excluyendo el mismo sacramento)
+        $conflictMisa = Misa::where('fecha', $data['fecha'])
+                           ->where('hora', $data['hora'])
+                           ->exists();
+        $conflictSac = Sacramento::where('fecha', $data['fecha'])
+                                 ->where('hora', $data['hora'])
+                                 ->where('id_sacramento', '!=', $sacramento->id_sacramento)
+                                 ->exists();
+        if ($conflictMisa || $conflictSac) {
+            return back()
+                ->withInput()
+                ->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
+        }
+
+        // 2. Actualizar sacramento
         $sacramento->update($data);
 
-        return redirect()->route('sacramentos.index')->with('success', 'Sacramento actualizado correctamente.');
+        return redirect()
+            ->route('sacramentos.index')
+            ->with('success', 'Sacramento actualizado correctamente.');
     }
 
     public function destroy(Sacramento $sacramento)
@@ -111,6 +141,8 @@ class SacramentoController extends Controller
         $sacramento->fieles()->delete();
         $sacramento->delete();
 
-        return redirect()->route('sacramentos.index')->with('success', 'Sacramento eliminado correctamente.');
+        return redirect()
+            ->route('sacramentos.index')
+            ->with('success', 'Sacramento eliminado correctamente.');
     }
 }
