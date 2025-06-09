@@ -20,6 +20,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Middleware\CheckSession;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\BackupController;
+USE App\Http\Controllers\LogController;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -58,6 +59,8 @@ Route::middleware([CheckSession::class])->group(function () {
         Route::resource('usuarios', UsuarioController::class);
         Route::resource('rrhh', RrhhController::class);
         Route::get('estadisticas', [EstadisticaController::class, 'index'])->name('estadisticas.index');
+        Route::get('reportes', [App\Http\Controllers\LogController::class,'index'])
+         ->name('reportes.index');
         
         // Rutas para backups
         // 1) Listar backups
