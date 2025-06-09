@@ -81,7 +81,14 @@ Route::middleware([CheckSession::class])->group(function () {
 });
 
 // Recuperación de contraseña
-Route::get('/password/solicitar', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
-Route::post('/password/solicitar', [PasswordResetController::class, 'sendResetLink'])->name('password.send');
-Route::get('/password/restablecer', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
-Route::post('/password/restablecer', [PasswordResetController::class, 'updatePassword'])->name('password.update');
+// Solicitar link
+Route::get('/password/solicitar',   [PasswordResetController::class, 'showRequestForm'])
+     ->name('password.request');
+Route::post('/password/solicitar',  [PasswordResetController::class, 'sendResetLink'])
+     ->name('password.send');
+
+// Restablecer
+Route::get('/password/restablecer', [PasswordResetController::class, 'showResetForm'])
+     ->name('password.reset');
+Route::post('/password/restablecer',[PasswordResetController::class, 'updatePassword'])
+     ->name('password.update');

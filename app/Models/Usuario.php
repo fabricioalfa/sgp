@@ -1,13 +1,18 @@
 <?php
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Notifications\Notifiable;
 
-class Usuario extends Model
+class Usuario extends Authenticatable
 {
-    protected $table = 'usuarios';
+    use Notifiable, CanResetPassword;
 
+    protected $table = 'usuarios';
     protected $primaryKey = 'id_usuario';
+    public $timestamps = true;
 
     protected $fillable = [
         'nombre_usuario',
@@ -22,7 +27,23 @@ class Usuario extends Model
         'fecha_registro',
     ];
 
-    protected $hidden = ['contrasena'];
+    protected $hidden = [
+        'contrasena',
+    ];
 
-    public $timestamps = true;
+    /**
+     * Override to return the password field.
+     */
+    public function getAuthPassword()
+    {
+        return $this->contrasena;
+    }
+
+    /**
+     * Override to return the email field for password resets.
+     */
+    public function getEmailForPasswordReset()
+    {
+        return $this->correo_electronico;
+    }
 }

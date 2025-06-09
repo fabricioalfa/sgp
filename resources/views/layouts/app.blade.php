@@ -31,6 +31,11 @@
 
 <body class="text-[#3C3C3C] h-screen flex text-base overflow-hidden">
 
+  @php
+    // Obtener usuario de sesión (puede ser null)
+    $user = session('usuario');
+  @endphp
+
   {{-- Sidebar --}}
   <aside class="w-64 bg-[#E9A209] text-white shadow-lg flex flex-col h-full text-lg backdrop-blur-sm/40">
     <div class="px-6 py-5 text-2xl font-extrabold tracking-tight border-b border-[#F4A261]">
@@ -40,101 +45,76 @@
     <nav class="flex-1 px-4 py-6 space-y-3 font-semibold overflow-y-auto">
       <a href="{{ route('panel') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
         <!-- Icono Home -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M3 9.75V21h18V9.75L12 3 3 9.75z"/>
-        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9.75V21h18V9.75L12 3 3 9.75z"/></svg>
         Panel Principal
       </a>
       <a href="{{ route('sacerdotes.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
         <!-- Icono Sacerdotes -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2"/>
-        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2"/></svg>
         Sacerdotes
       </a>
       <a href="{{ route('cebs.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
         <!-- Icono CEBs -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M5 13l4 4L19 7"/>
-        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
         CEBs
       </a>
       <a href="{{ route('misas.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
         <!-- Icono Misas -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M12 4v16m8-8H4"/>
-        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
         Misas
       </a>
       <a href="{{ route('sacramentos.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
         <!-- Icono Sacramentos -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         Sacramentos
       </a>
       <a href="{{ route('actividades.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
         <!-- Icono Actividades -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"/>
-        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"/></svg>
         Actividades
       </a>
       <a href="{{ route('certificados.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
         <!-- Icono Certificados -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M9 12h6m2 6H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v9a2 2 0 01-2 2z"/>
-        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m2 6H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v9a2 2 0 01-2 2z"/></svg>
         Certificados
       </a>
       <a href="{{ route('finanzas.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
         <!-- Icono Finanzas -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path fill="none" stroke="currentColor" stroke-width="2" d="M17 9l4 4-4 4M7 9l-4 4 4 4"/>
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M17 9l4 4-4 4M7 9l-4 4 4 4"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/></svg>
         Finanzas
       </a>
 
       {{-- Ítems exclusivos de Administrador --}}
-      @if(session('usuario')->rol === 'administrador')
+      @if($user && $user->rol === 'administrador')
         <a href="{{ route('rrhh.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
           <!-- Icono RRHH -->
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422M12 14L5.84 10.578M12 14v7"/>
-          </svg>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422M12 14L5.84 10.578M12 14v7"/></svg>
           RRHH
         </a>
         <a href="{{ route('usuarios.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
           <!-- Icono Usuarios -->
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0z"/><path d="M4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2"/>
-          </svg>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0z"/><path d="M4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2"/></svg>
           Usuarios
         </a>
         <a href="{{ route('estadisticas.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
           <!-- Icono Estadísticas -->
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M9 17v-6m4 6V7m4 6v4"/>
-          </svg>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-6m4 6V7m4 6v4"/></svg>
           Estadísticas
         </a>
         <a href="{{ route('backups.index') }}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-[#C1440E] transition">
           <!-- Icono Backups -->
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M4 6h16v12H4z"/><path d="M8 6v-2m8 2v-2"/>
-          </svg>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M8 6v-2m8 2v-2"/></svg>
           Backups
         </a>
       @endif
     </nav>
 
     {{-- Usuario activo --}}
-    @if(session('usuario'))
+    @if($user)
       <div class="px-4 py-5 border-t border-[#F4A261] bg-[#F4A261]/10">
         <div class="text-sm text-white/80 mb-2">Sesión activa</div>
         <div class="text-base font-semibold text-white truncate mb-3">
-          {{ session('usuario')->nombre_usuario }}
+          {{ $user->nombre_usuario }}
         </div>
         <form action="{{ route('logout') }}" method="POST">
           @csrf

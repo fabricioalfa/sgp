@@ -93,6 +93,13 @@
     >
       Iniciar sesión
     </button>
+    {{-- Enlace “Olvidé mi contraseña” --}}
+    <div class="text-right">
+      <a href="{{ route('password.request') }}"
+         class="text-sm text-[#C1440E] hover:underline">
+        ¿Olvidaste tu contraseña?
+      </a>
+    </div>
   </form>
 </main>
 @endsection

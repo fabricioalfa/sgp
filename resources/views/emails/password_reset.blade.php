@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Restablecer contraseña</title>
-</head>
+<html lang="es">
+<head><meta charset="UTF-8"></head>
 <body>
-  <p>Hola,</p>
-  <p>Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace:</p>
-  <p><a href="{{ $url }}">{{ $url }}</a></p>
-  <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
-  <p>Saludos,<br>El equipo de tu sistema</p>
+  <h2>Restablecer tu contraseña</h2>
+  <p>Para elegir una nueva contraseña, haz clic en el botón:</p>
+  <a href="{{ url('/password/restablecer?token='.$token.'&email='.urlencode($email)) }}"
+     style="display:inline-block;padding:10px 20px;background:#E9A209;color:#fff;border-radius:5px;text-decoration:none">
+    Restablecer contraseña
+  </a>
+  <p>Si no solicitaste este correo, puedes ignorarlo.</p>
 </body>
 </html>
