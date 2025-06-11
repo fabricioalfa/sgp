@@ -15,11 +15,11 @@ class AuthController extends Controller
 
     public function login(Request $request) {
         $request->validate([
-            'nombre_usuario' => 'required',
+            'correo_electronico' => 'required|email',
             'contrasena' => 'required',
         ]);
 
-        $usuario = Usuario::where('nombre_usuario', $request->nombre_usuario)->first();
+        $usuario = Usuario::where('correo_electronico', $request->correo_electronico)->first();
 
         if ($usuario && Hash::check($request->contrasena, $usuario->contrasena)) {
             session(['usuario' => $usuario]);
@@ -27,34 +27,32 @@ class AuthController extends Controller
             return redirect()->route('panel');
         }
 
-        return back()->withErrors(['nombre_usuario' => 'Credenciales incorrectas']);
+        return back()->with('error', 'Correo electrónico o contraseña incorrectos')->withInput();
     }
 
     public function panel()
     {
         $usuario = session('usuario');
 
-        if ($usuario->rol === 'administrador') {
-            return view('panel.admin');
+        if (!$usuario) {
+            return redirect()->route('login')->with('error', 'Debes iniciar sesión');
         }
 
-        return view('panel.secretario');
+        return $usuario->rol === 'administrador'
+            ? view('panel.admin')
+            : view('panel.secretario');
     }
-
 
     public function logout(Request $request) {
         session()->flush();
         return redirect()->route('login');
     }
 
-    //recuperar la contraseña
-    public function showResetForm()
-    {
+    public function showResetForm() {
         return view('auth.recuperar');
     }
 
-    public function resetPassword(Request $request)
-    {
+    public function resetPassword(Request $request) {
         $request->validate([
             'correo_electronico' => 'required|email',
         ]);

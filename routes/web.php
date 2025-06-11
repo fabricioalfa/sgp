@@ -44,6 +44,14 @@ Route::middleware([CheckSession::class])->group(function () {
     Route::get('sacramentos/{sacramento}/fieles', [SacramentoController::class, 'fielesForm'])->name('sacramentos.fieles');
     Route::post('sacramentos/{sacramento}/fieles', [SacramentoController::class, 'storeFieles'])->name('sacramentos.fieles.store');
     Route::get('sacramentos/{sacramento}/recibo', [SacramentoController::class, 'mostrarRecibo'])->name('sacramentos.recibo');
+    Route::get('sacramentos/{sacramento}/familiares', [SacramentoController::class, 'formFamiliares'])
+     ->name('sacramentos.familiares.create');
+    Route::post('sacramentos/{sacramento}/familiares', [SacramentoController::class, 'storeFamiliares'])
+     ->name('sacramentos.familiares.store');
+    Route::get('/sacramentos/{sacramento}/familiares/edit', [SacramentoController::class, 'editFamiliares'])->name('sacramentos.familiares.edit');
+    Route::put('sacramentos/{sacramento}/familiares', [SacramentoController::class, 'updateFamiliares'])->name('sacramentos.familiares.update');
+
+
     Route::resource('actividades', ActividadController::class)->parameters(['actividades' => 'actividad']);
     Route::resource('certificados', CertificadoController::class)->only(['index','create','store']);
     Route::post('certificados/eliminar-temp', [CertificadoController::class, 'eliminarTemporal'])->name('certificados.eliminarTemporal');

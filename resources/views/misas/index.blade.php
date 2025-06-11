@@ -17,6 +17,23 @@
     </div>
   @endif
 
+  <form method="GET" class="flex flex-wrap items-end gap-4 mb-6">
+    <div>
+      <label class="text-sm font-medium text-[#573830]">Desde</label>
+      <input type="date" name="desde" value="{{ request('desde') }}"
+            class="border rounded px-3 py-2 text-[#573830]">
+    </div>
+    <div>
+      <label class="text-sm font-medium text-[#573830]">Hasta</label>
+      <input type="date" name="hasta" value="{{ request('hasta') }}"
+            class="border rounded px-3 py-2 text-[#573830]">
+    </div>
+    <button type="submit"
+            class="bg-[#E9A209] hover:bg-[#c98b07] text-white px-4 py-2 rounded">
+      Filtrar
+    </button>
+  </form>
+
   <div class="overflow-auto max-h-[70vh] rounded-xl shadow bg-white/60">
     <table class="w-full min-w-[600px] text-[15px] text-[#573830]">
       <thead class="bg-white/20 text-[#C1440E] uppercase tracking-wide text-sm border-b border-[#F4A261]">
@@ -31,13 +48,17 @@
       </thead>
       <tbody>
         @foreach($misas as $misa)
-          <tr class="border-b border-[#F4A261]/50 hover:bg-white/10 transition" x-data="{ showConfirm: false }">
+          <tr class="border-b border-[#F4A261]/50 hover:bg-white/10 transition" x-data="{ showInfo: false, showConfirm: false }">
             <td class="p-3">{{ $misa->fecha }}</td>
             <td class="p-3">{{ $misa->hora }}</td>
             <td class="p-3">{{ $misa->tipo_misa ?? '-' }}</td>
             <td class="p-3">{{ $misa->sacerdote->nombres ?? 'Sin asignar' }}</td>
             <td class="p-3">{{ ucfirst($misa->estado) }}</td>
             <td class="p-3 flex gap-2 flex-wrap">
+              <button @click="showInfo = !showInfo"
+                      class="bg-green-600 text-white px-4 py-1 rounded-full text-sm hover:bg-green-800 transition">
+                Ver
+              </button>
               <a href="{{ route('misas.recibo', $misa) }}"
                  class="bg-blue-600 text-white px-4 py-1 rounded-full text-sm hover:bg-blue-800 transition">
                 Generar Recibo
@@ -50,7 +71,22 @@
                       class="bg-[#C1440E] text-white px-4 py-1 rounded-full text-sm hover:bg-[#a8390b] transition">
                 Eliminar
               </button>
-              <!-- Modal -->
+
+              <!-- Panel de información -->
+              <div x-show="showInfo" x-cloak x-transition
+                   class="mt-2 w-full bg-white/90 border border-[#F4A261] rounded-lg p-4 shadow text-sm text-[#573830]">
+                <p><strong>Lugar:</strong> {{ $misa->lugar ?? '-' }}</p>
+                <p><strong>Intención:</strong> {{ $misa->intencion ?? '-' }}</p>
+                <p><strong>Estipendio:</strong> {{ $misa->estipendio ? $misa->estipendio . ' Bs' : '-' }}</p>
+                <p><strong>Solicitante:</strong>
+                  {{ $misa->creyente->nombres ?? '' }} {{ $misa->creyente->apellido_paterno ?? '' }} {{ $misa->creyente->apellido_materno ?? '' }}
+                </p>
+                @if($misa->latitud && $misa->longitud)
+                  <p><strong>Coordenadas:</strong> {{ $misa->latitud }}, {{ $misa->longitud }}</p>
+                @endif
+              </div>
+
+              <!-- Modal Eliminar -->
               <div x-show="showConfirm" x-cloak x-transition
                    class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
                 <div class="bg-white/90 rounded-xl shadow-xl p-6 w-full max-w-sm text-center text-[#573830]">

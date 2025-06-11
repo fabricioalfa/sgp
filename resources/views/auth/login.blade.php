@@ -18,26 +18,25 @@
   <form action="{{ route('login.post') }}" method="POST" class="space-y-5" novalidate x-data="{ show: false }">
     @csrf
 
-    {{-- Usuario --}}
+    {{-- Correo electrónico --}}
     <div>
-      <label for="nombre_usuario" class="block text-sm font-medium text-[#573830] mb-1">Usuario</label>
+      <label for="correo_electronico" class="block text-sm font-medium text-[#573830] mb-1">Correo electrónico</label>
       <input
-        type="text"
-        name="nombre_usuario"
-        id="nombre_usuario"
-        placeholder="Ingresa tu usuario"
-        pattern="[A-Za-zÀ-ÿ\s]+"
-        title="Solo letras y espacios"
-        value="{{ old('nombre_usuario') }}"
+        type="email"
+        name="correo_electronico"
+        id="correo_electronico"
+        placeholder="ejemplo@correo.com"
+        value="{{ old('correo_electronico') }}"
         class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2
-               {{ $errors->has('nombre_usuario') ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-[#F4A261]' }}"
+               {{ $errors->has('correo_electronico') ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-[#F4A261]' }}"
+        required
       >
-      @error('nombre_usuario')
+      @error('correo_electronico')
         <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
       @enderror
     </div>
 
-    {{-- Contraseña con “ojito” centrado --}}
+    {{-- Contraseña --}}
     <div>
       <label for="contrasena" class="block text-sm font-medium text-[#573830] mb-1">Contraseña</label>
       <div class="relative">
@@ -48,8 +47,8 @@
           placeholder="Ingresa tu contraseña"
           class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2
                  {{ $errors->has('contrasena') ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-[#F4A261]' }}"
+          required
         >
-        <!-- Botón ojo, ahora posicionado relativo al input -->
         <button
           type="button"
           x-on:click="show = !show"
@@ -57,7 +56,6 @@
           tabindex="-1"
         >
           <template x-if="!show">
-            <!-- Icono ojo cerrado -->
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -70,7 +68,6 @@
             </svg>
           </template>
           <template x-if="show">
-            <!-- Icono ojo abierto -->
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -93,7 +90,7 @@
     >
       Iniciar sesión
     </button>
-    {{-- Enlace “Olvidé mi contraseña” --}}
+
     <div class="text-right">
       <a href="{{ route('password.request') }}"
          class="text-sm text-[#C1440E] hover:underline">

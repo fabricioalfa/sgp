@@ -22,32 +22,30 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre_usuario' => 'required|unique:usuarios',
+            'correo_electronico' => 'required|email|unique:usuarios,correo_electronico',
             'contrasena' => [
-            'required',
-            'string',
-            'min:8',
-            'regex:/[a-z]/',      // minúscula
-            'regex:/[A-Z]/',      // mayúscula
-            'regex:/[0-9]/',      // número
-            'regex:/[@$!%*#?&]/'  // especial
+                'required',
+                'string',
+                'min:8',
+                'regex:/[a-z]/',      // minúscula
+                'regex:/[A-Z]/',      // mayúscula
+                'regex:/[0-9]/',      // número
+                'regex:/[@$!%*#?&]/'  // especial
             ],
             'nombres' => 'required',
             'apellido_paterno' => 'required',
             'apellido_materno' => 'nullable',
-            'correo_electronico' => 'nullable|email',
             'telefono' => 'nullable',
             'rol' => 'required|in:administrador,secretario',
             'estado' => 'required|in:activo,inactivo',
         ]);
 
         Usuario::create([
-            'nombre_usuario' => $request->nombre_usuario,
+            'correo_electronico' => $request->correo_electronico,
             'contrasena' => Hash::make($request->contrasena),
             'nombres' => $request->nombres,
             'apellido_paterno' => $request->apellido_paterno,
             'apellido_materno' => $request->apellido_materno,
-            'correo_electronico' => $request->correo_electronico,
             'telefono' => $request->telefono,
             'rol' => $request->rol,
             'estado' => $request->estado,
@@ -65,20 +63,20 @@ class UsuarioController extends Controller
     public function update(Request $request, Usuario $usuario)
     {
         $request->validate([
+            'correo_electronico' => 'required|email|unique:usuarios,correo_electronico,' . $usuario->id_usuario . ',id_usuario',
             'nombres' => 'required',
             'apellido_paterno' => 'required',
             'apellido_materno' => 'nullable',
-            'correo_electronico' => 'nullable|email',
             'telefono' => 'nullable',
             'rol' => 'required|in:administrador,secretario',
             'estado' => 'required|in:activo,inactivo',
         ]);
 
         $usuario->update($request->only([
+            'correo_electronico',
             'nombres',
             'apellido_paterno',
             'apellido_materno',
-            'correo_electronico',
             'telefono',
             'rol',
             'estado',

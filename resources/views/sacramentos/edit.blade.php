@@ -14,8 +14,8 @@
         <label class="text-sm text-gray-700">Tipo de Sacramento</label>
         <select name="tipo_sacramento" class="w-full border rounded-lg px-3 py-2">
           <option value="bautizo" {{ $sacramento->tipo_sacramento == 'bautizo' ? 'selected' : '' }}>Bautizo</option>
-          <option value="comunion" {{ $sacramento->tipo_sacramento == 'comunion' ? 'selected' : '' }}>Comunión</option>
-          <option value="confirmacion" {{ $sacramento->tipo_sacramento == 'confirmacion' ? 'selected' : '' }}>Confirmación</option>
+          <option value="comunion" {{ $sacramento->tipo_sacramento == 'comunion' ? 'selected' : '' }}>Comunion</option>
+          <option value="confirmacion" {{ $sacramento->tipo_sacramento == 'confirmacion' ? 'selected' : '' }}>Confirmacion</option>
           <option value="matrimonio" {{ $sacramento->tipo_sacramento == 'matrimonio' ? 'selected' : '' }}>Matrimonio</option>
         </select>
         @error('tipo_sacramento') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
@@ -62,34 +62,19 @@
         <input type="text" name="apellido_materno" value="{{ $sacramento->apellido_materno }}" class="w-full border rounded-lg px-3 py-2">
         @error('apellido_materno') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
       </div>
-
-      <div>
-        <label class="text-sm text-gray-700">Fecha de Nacimiento</label>
-        <input type="date" name="fecha_nacimiento" value="{{ $sacramento->fecha_nacimiento }}" class="w-full border rounded-lg px-3 py-2">
-        @error('fecha_nacimiento') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
-      </div>
-
-      <div>
-        <label class="text-sm text-gray-700">Sexo</label>
-        <select name="sexo" class="w-full border rounded-lg px-3 py-2">
-          <option value="M" {{ $sacramento->sexo == 'M' ? 'selected' : '' }}>Masculino</option>
-          <option value="F" {{ $sacramento->sexo == 'F' ? 'selected' : '' }}>Femenino</option>
-        </select>
-        @error('sexo') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
-      </div>
     </div>
 
     <div class="mt-6 flex justify-end gap-4">
-      <a href="{{ route('sacramentos.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-        Cancelar
-      </a>
-      <button type="submit" class="bg-[#E9A209] text-white px-6 py-2 rounded-full shadow hover:bg-[#c98b07] transition">
-        Actualizar
-      </button>
-      <a href="{{ route('sacramentos.fieles', ['sacramento' => $sacramento]) }}" class="px-6 py-2 rounded-full shadow text-white bg-blue-600 hover:bg-blue-700 transition">
-        Editar Fieles
-      </a>
-    </div>
+  <a href="{{ route('sacramentos.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+    Cancelar
+  </a>
+  <button type="submit" class="bg-[#E9A209] text-white px-6 py-2 rounded-full shadow hover:bg-[#c98b07] transition">
+    Actualizar
+  </button>
+  <a href="{{ route('sacramentos.familiares.edit', $sacramento) }}" class="px-6 py-2 rounded-full shadow text-white bg-blue-600 hover:bg-blue-700 transition">
+    Editar Familiares
+  </a>
+</div>
   </form>
 </div>
 @endsection

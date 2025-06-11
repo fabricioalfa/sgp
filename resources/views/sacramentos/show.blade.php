@@ -13,15 +13,38 @@
     <div><strong>Lugar:</strong> {{ $sacramento->lugar }}</div>
     <div><strong>Iglesia:</strong> {{ $sacramento->iglesia }}</div>
     <div><strong>Nombre Receptor:</strong> {{ $sacramento->nombre_receptor }} {{ $sacramento->apellido_paterno }} {{ $sacramento->apellido_materno }}</div>
-    <div><strong>Fecha Nacimiento:</strong> {{ $sacramento->fecha_nacimiento }}</div>
-    <div><strong>Sexo:</strong> {{ ucfirst($sacramento->sexo) }}</div>
+
+    @if($sacramento->fecha_nacimiento)
+      <div><strong>Fecha Nacimiento:</strong> {{ $sacramento->fecha_nacimiento }}</div>
+    @endif
+
+    @if($sacramento->sexo)
+      <div><strong>Sexo:</strong> {{ ucfirst($sacramento->sexo) }}</div>
+    @endif
+
+    <div><strong>Estado:</strong>
+      @if($sacramento->observado)
+        <span class="text-red-600 font-semibold">Observado</span>
+      @else
+        <span class="text-green-700 font-semibold">Correcto</span>
+      @endif
+    </div>
   </div>
 
   <div class="mt-6">
     <h3 class="text-lg font-semibold text-[#C1440E]">Fieles Relacionados</h3>
-    <ul class="list-disc pl-6 mt-2">
+    <ul class="list-disc pl-6 mt-2 space-y-1">
       @forelse($sacramento->fieles as $fiel)
-        <li>{{ ucfirst($fiel->tipo_fiel) }}: {{ $fiel->nombres }} {{ $fiel->apellido_paterno }} {{ $fiel->apellido_materno }}</li>
+        <li>
+          <strong>{{ ucfirst($fiel->tipo_fiel) }}:</strong>
+          {{ $fiel->nombres }} {{ $fiel->apellido_paterno }} {{ $fiel->apellido_materno }}
+          @if($fiel->correo_electronico)
+            | <span class="text-sm text-gray-700">📧 {{ $fiel->correo_electronico }}</span>
+          @endif
+          @if($fiel->telefono)
+            | <span class="text-sm text-gray-700">📞 {{ $fiel->telefono }}</span>
+          @endif
+        </li>
       @empty
         <li>No hay fieles registrados para este sacramento.</li>
       @endforelse

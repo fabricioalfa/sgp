@@ -17,9 +17,12 @@ class Fiel extends Model
     // Definir los atributos que se pueden llenar
     protected $fillable = [
         'id_sacramento',
+        'id_misa',
         'nombres',
         'apellido_paterno',
         'apellido_materno',
+        'correo_electronico',
+        'telefono',
         'tipo_fiel',
     ];
 
@@ -27,5 +30,9 @@ class Fiel extends Model
     public function sacramento()
     {
         return $this->belongsTo(Sacramento::class, 'id_sacramento');
+    }
+    public function misa()
+    {
+        return $this->belongsTo(Misa::class, 'id_misa');
     }
 }

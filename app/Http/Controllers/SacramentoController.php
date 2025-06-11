@@ -2,19 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Sacramento;
-use App\Models\Fiel;
-use App\Models\Misa;
+use App\Models\{Sacramento, Fiel, Misa};
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class SacramentoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sacramentos = Sacramento::orderBy('fecha', 'desc')->get();
+        $query = Sacramento::query();
+
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('fecha', '>=', $request->input('fecha_inicio'));
+        }
+
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('fecha', '<=', $request->input('fecha_fin'));
+        }
+
+        $sacramentos = $query->orderBy('fecha', 'desc')->get();
+
         return view('sacramentos.index', compact('sacramentos'));
     }
+
 
     public function create()
     {
@@ -32,49 +43,107 @@ class SacramentoController extends Controller
             'nombre_receptor'  => 'required|string|max:100',
             'apellido_paterno' => 'nullable|string|max:100',
             'apellido_materno' => 'nullable|string|max:100',
-            'fecha_nacimiento' => 'required|date',
-            'sexo'             => 'required|in:M,F',
         ]);
 
-        // 1. Verificar solapamiento con otra Misa o Sacramento
-        $conflictMisa = Misa::where('fecha', $data['fecha'])
-                           ->where('hora', $data['hora'])
-                           ->exists();
-        $conflictSac = Sacramento::where('fecha', $data['fecha'])
-                                 ->where('hora', $data['hora'])
-                                 ->exists();
+        $conflictMisa = Misa::where('fecha', $data['fecha'])->where('hora', $data['hora'])->exists();
+        $conflictSac  = Sacramento::where('fecha', $data['fecha'])->where('hora', $data['hora'])->exists();
+
         if ($conflictMisa || $conflictSac) {
-            return back()
-                ->withInput()
-                ->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
+            return back()->withInput()->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
         }
 
-        // 2. Crear sacramento
         $data['id_usuario_registro'] = session('usuario')->id_usuario;
         $sacramento = Sacramento::create($data);
 
-        return redirect()->route('sacramentos.fieles', $sacramento);
+        return redirect()->route('sacramentos.familiares.create', $sacramento);
     }
 
-    public function fielesForm(Sacramento $sacramento)
+    public function formFamiliares(Sacramento $sacramento)
     {
-        return view('sacramentos.fieles', compact('sacramento'));
+        $fieles = $sacramento->fieles()->get();
+        $modoEdicion = false;
+        return view('sacramentos.familiares', compact('sacramento', 'fieles', 'modoEdicion'));
     }
 
-    public function storeFieles(Request $request, Sacramento $sacramento)
+    public function editFamiliares(Sacramento $sacramento)
     {
-        $validated = $request->validate([
-            'fieles.*.nombres'           => 'required|string|max:100',
-            'fieles.*.apellido_paterno'  => 'nullable|string|max:100',
-            'fieles.*.apellido_materno'  => 'nullable|string|max:100',
-            'fieles.*.tipo_fiel'         => 'required|in:padrino,madrina,testigo,padre,madre',
-        ]);
+        $fieles = $sacramento->fieles()->get();
+        $modoEdicion = true;
+        return view('sacramentos.familiares', compact('sacramento', 'fieles', 'modoEdicion'));
+    }
 
-        foreach ($validated['fieles'] as $fiel) {
-            $sacramento->fieles()->create($fiel);
-        }
+    public function storeFamiliares(Request $request, Sacramento $sacramento)
+    {
+        $this->guardarFielesYCertificados($request, $sacramento);
 
         return redirect()->route('sacramentos.recibo', $sacramento);
+    }
+
+    public function updateFamiliares(Request $request, Sacramento $sacramento)
+    {
+        $this->guardarFielesYCertificados($request, $sacramento);
+
+        return redirect()->route('sacramentos.index')->with('success', 'Familiares actualizados.');
+    }
+
+    private function guardarFielesYCertificados(Request $request, Sacramento $sacramento)
+    {
+        $fieles = $request->input('fieles', []);
+
+        if (empty($fieles)) {
+            return back()->withErrors(['fieles' => 'Debe registrar al menos un familiar.'])->withInput();
+        }
+
+        $validated = $request->validate([
+            'fieles.*.nombres'            => 'required|string|max:100',
+            'fieles.*.apellido_paterno'   => 'nullable|string|max:100',
+            'fieles.*.apellido_materno'   => 'nullable|string|max:100',
+            'fieles.*.correo_electronico' => 'nullable|string|email|max:150',
+            'fieles.*.telefono'           => 'nullable|string|max:50',
+            'fieles.*.tipo_fiel'          => 'required|string',
+        ]);
+
+        $sacramento->fieles()->delete();
+
+        foreach ($validated['fieles'] as $fiel) {
+            $sacramento->fieles()->create([
+                'nombres'            => $fiel['nombres'],
+                'apellido_paterno'  => $fiel['apellido_paterno'] ?? null,
+                'apellido_materno'  => $fiel['apellido_materno'] ?? null,
+                'correo_electronico'=> $fiel['correo_electronico'] ?? null,
+                'telefono'          => $fiel['telefono'] ?? null,
+                'tipo_fiel'         => $fiel['tipo_fiel'],
+            ]);
+        }
+
+        $certificados = $request->file('certificados', []);
+        $observado = false;
+
+        if (!empty($certificados)) {
+            foreach ($certificados as $key => $archivo) {
+                if (!$archivo || !$archivo->isValid()) {
+                    $observado = true;
+                }
+            }
+        }
+
+        $tiposRequierenCert = [
+            'comunion'     => ['bautizo'],
+            'confirmacion' => ['bautizo', 'comunion'],
+            'matrimonio'   => ['bautizo', 'comunion', 'confirmacion'],
+        ];
+
+        $esperados = $tiposRequierenCert[$sacramento->tipo_sacramento] ?? [];
+        foreach ($esperados as $cert) {
+            if (!isset($certificados[$cert])) {
+                $observado = true;
+            }
+        }
+
+        if ($observado) {
+            $sacramento->observado = true;
+            $sacramento->save();
+        }
     }
 
     public function mostrarRecibo(Sacramento $sacramento)
@@ -91,11 +160,13 @@ class SacramentoController extends Controller
 
     public function show(Sacramento $sacramento)
     {
+        $sacramento->load('fieles');
         return view('sacramentos.show', compact('sacramento'));
     }
 
     public function edit(Sacramento $sacramento)
     {
+        $sacramento->load('fieles');
         return view('sacramentos.edit', compact('sacramento'));
     }
 
@@ -110,30 +181,25 @@ class SacramentoController extends Controller
             'nombre_receptor'  => 'required|string|max:100',
             'apellido_paterno' => 'nullable|string|max:100',
             'apellido_materno' => 'nullable|string|max:100',
-            'fecha_nacimiento' => 'required|date',
-            'sexo'             => 'required|in:M,F',
         ]);
 
-        // 1. Verificar solapamiento (excluyendo el mismo sacramento)
         $conflictMisa = Misa::where('fecha', $data['fecha'])
                            ->where('hora', $data['hora'])
+                           ->where('id_misa', '!=', $sacramento->id_sacramento)
                            ->exists();
+
         $conflictSac = Sacramento::where('fecha', $data['fecha'])
                                  ->where('hora', $data['hora'])
                                  ->where('id_sacramento', '!=', $sacramento->id_sacramento)
                                  ->exists();
+
         if ($conflictMisa || $conflictSac) {
-            return back()
-                ->withInput()
-                ->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
+            return back()->withInput()->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
         }
 
-        // 2. Actualizar sacramento
         $sacramento->update($data);
 
-        return redirect()
-            ->route('sacramentos.index')
-            ->with('success', 'Sacramento actualizado correctamente.');
+        return redirect()->route('sacramentos.index')->with('success', 'Sacramento actualizado correctamente.');
     }
 
     public function destroy(Sacramento $sacramento)
@@ -141,8 +207,6 @@ class SacramentoController extends Controller
         $sacramento->fieles()->delete();
         $sacramento->delete();
 
-        return redirect()
-            ->route('sacramentos.index')
-            ->with('success', 'Sacramento eliminado correctamente.');
+        return redirect()->route('sacramentos.index')->with('success', 'Sacramento eliminado correctamente.');
     }
 }

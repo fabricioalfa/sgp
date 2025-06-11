@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Http\Request;
 
 use App\Models\Misa;
+use App\Models\Fiel;
 use App\Models\Sacerdote;
 use App\Models\Egreso;
 use App\Models\Sacramento;
@@ -13,19 +15,27 @@ use Carbon\Carbon;
 
 class MisaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Marcar misas pasadas como celebradas
         Misa::whereDate('fecha', '<', Carbon::today())
             ->whereNotIn('estado', ['celebrada', 'cancelada'])
             ->update(['estado' => 'celebrada']);
 
-        $misas = Misa::with('sacerdote')
-            ->orderBy('fecha', 'desc')
-            ->get();
+        // Iniciar query con relaciones
+        $query = Misa::with('sacerdote')->orderBy('fecha', 'desc');
+
+        // Aplicar filtro de fecha si se enviaron los campos
+        if ($request->filled('desde') && $request->filled('hasta')) {
+            $query->whereBetween('fecha', [$request->desde, $request->hasta]);
+        }
+
+        // Obtener los resultados finales
+        $misas = $query->get();
 
         return view('misas.index', compact('misas'));
     }
+
 
     public function create()
     {
@@ -39,43 +49,40 @@ class MisaController extends Controller
         $tipoKey = strtoupper(trim($data['tipo_misa']));
         $isComunitaria = $tipoKey === 'MISA DE DIFUNTOS COMUNITARIAS';
 
-        // Verificar solapamiento con Sacramento siempre
-        $conflictSac = Sacramento::where('fecha', $data['fecha'])
-                                 ->where('hora', $data['hora'])
-                                 ->exists();
-
-        // Verificar solapamiento con otra Misa solo si NO es comunitaria
-        $conflictMisa = false;
-        if (! $isComunitaria) {
-            $conflictMisa = Misa::where('fecha', $data['fecha'])
-                                ->where('hora', $data['hora'])
-                                ->exists();
-        }
+        $conflictSac = Sacramento::where('fecha', $data['fecha'])->where('hora', $data['hora'])->exists();
+        $conflictMisa = !$isComunitaria && Misa::where('fecha', $data['fecha'])->where('hora', $data['hora'])->exists();
 
         if ($conflictSac || $conflictMisa) {
-            return back()
-                ->withInput()
-                ->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
+            return back()->withInput()->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
         }
 
-        // Calcular estipendio según tipo de misa
         $estipendios = [
             'MISA DE DIFUNTOS COMUNITARIAS'      => 20,
             'MISA DE CUERPO PRESENTE'            => 100,
-            'MISA DE SALUD Y OTRAS PETICIONES'   => 100,
+            'MISA DE SALUD'                      => 100,
+            'MISA DE ALMA'                       => 100,    
             'MISA DE DEVOCION'                   => 350,
             'MISA DE FIESTA (preste folclorico)' => 500,
             'MISA DE ANIVERSARIO MATRIMONIAL'    => 200,
         ];
         $estipendio = $estipendios[$tipoKey] ?? 0;
 
-        // Crear nueva misa
         $misa = Misa::create(array_merge($data, [
             'id_usuario_registro' => session('usuario')->id_usuario,
             'estipendio'          => $estipendio,
         ]));
 
-        // Solo insertar ingreso si el monto es mayor a 0
+        // Insertar fiel asociado a la misa
+        Fiel::create([
+            'id_misa'           => $misa->id_misa,
+            'nombres'           => $data['fiel_nombres'],
+            'apellido_paterno'  => $data['fiel_apellido_paterno'],
+            'apellido_materno'  => $data['fiel_apellido_materno'],
+            'correo_electronico'=> $data['fiel_correo'],
+            'telefono'          => $data['fiel_telefono'],
+            'tipo_fiel'         => 'creyente',
+        ]);
+
         if ($estipendio > 0) {
             DB::table('ingresos')->insert([
                 'tipo_ingreso'        => 'misa',
@@ -93,6 +100,8 @@ class MisaController extends Controller
 
     public function edit(Misa $misa)
     {
+        $misa->load('creyente');
+        
         $sacerdotes = Sacerdote::all();
         return view('misas.edit', compact('misa', 'sacerdotes'));
     }
@@ -103,43 +112,27 @@ class MisaController extends Controller
         $tipoKey = strtoupper(trim($data['tipo_misa']));
         $isComunitaria = $tipoKey === 'MISA DE DIFUNTOS COMUNITARIAS';
 
-        // Verificar solapamiento con Sacramento siempre
-        $conflictSac = Sacramento::where('fecha', $data['fecha'])
-                                 ->where('hora', $data['hora'])
-                                 ->exists();
-
-        // Verificar solapamiento con otra Misa solo si NO es comunitaria (excluyendo esta)
-        $conflictMisa = false;
-        if (! $isComunitaria) {
-            $conflictMisa = Misa::where('fecha', $data['fecha'])
-                                ->where('hora', $data['hora'])
-                                ->where('id_misa', '!=', $misa->id_misa)
-                                ->exists();
-        }
+        $conflictSac = Sacramento::where('fecha', $data['fecha'])->where('hora', $data['hora'])->exists();
+        $conflictMisa = !$isComunitaria && Misa::where('fecha', $data['fecha'])
+            ->where('hora', $data['hora'])->where('id_misa', '!=', $misa->id_misa)->exists();
 
         if ($conflictSac || $conflictMisa) {
-            return back()
-                ->withInput()
-                ->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
+            return back()->withInput()->withErrors(['fecha' => 'Ya existe un evento (Misa o Sacramento) en esa fecha y hora.']);
         }
 
-        // Recalcular estipendio
         $estipendios = [
             'MISA DE DIFUNTOS COMUNITARIAS'      => 20,
             'MISA DE CUERPO PRESENTE'            => 100,
-            'MISA DE SALUD Y OTRAS PETICIONES'   => 100,
+            'MISA DE SALUD'                      => 100,
+            'MISA DE ALMA'                       => 100,
             'MISA DE DEVOCION'                   => 350,
             'MISA DE FIESTA (preste folclorico)' => 500,
             'MISA DE ANIVERSARIO MATRIMONIAL'    => 200,
         ];
         $estipendio = $estipendios[$tipoKey] ?? 0;
 
-        // Actualizar datos de la misa
-        $misa->update(array_merge($data, [
-            'estipendio' => $estipendio,
-        ]));
+        $misa->update(array_merge($data, ['estipendio' => $estipendio]));
 
-        // Si cambió el estado a cancelada, registrar egreso por la misa cancelada
         if ($data['estado'] === 'cancelada') {
             Egreso::create([
                 'tipo_egreso'         => 'misa_cancelada',
@@ -151,18 +144,13 @@ class MisaController extends Controller
             ]);
         }
 
-        return redirect()
-            ->route('misas.index')
-            ->with('success', 'Misa actualizada correctamente.');
+        return redirect()->route('misas.index')->with('success', 'Misa actualizada correctamente.');
     }
 
     public function destroy(Misa $misa)
     {
         $misa->delete();
-
-        return redirect()
-            ->route('misas.index')
-            ->with('success', 'Misa eliminada correctamente.');
+        return redirect()->route('misas.index')->with('success', 'Misa eliminada correctamente.');
     }
 
     public function recibo(Misa $misa)

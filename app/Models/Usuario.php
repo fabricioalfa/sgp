@@ -15,12 +15,11 @@ class Usuario extends Authenticatable
     public $timestamps = true;
 
     protected $fillable = [
-        'nombre_usuario',
+        'correo_electronico',
         'contrasena',
         'nombres',
         'apellido_paterno',
         'apellido_materno',
-        'correo_electronico',
         'telefono',
         'rol',
         'estado',
@@ -31,17 +30,16 @@ class Usuario extends Authenticatable
         'contrasena',
     ];
 
-    /**
-     * Override to return the password field.
-     */
     public function getAuthPassword()
     {
         return $this->contrasena;
     }
 
-    /**
-     * Override to return the email field for password resets.
-     */
+    public function getAuthIdentifierName()
+    {
+        return 'correo_electronico';
+    }
+
     public function getEmailForPasswordReset()
     {
         return $this->correo_electronico;

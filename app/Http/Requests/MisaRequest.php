@@ -1,5 +1,4 @@
 <?php
-// app/Http/Requests/MisaRequest.php
 
 namespace App\Http\Requests;
 
@@ -11,17 +10,11 @@ use Carbon\Carbon;
 
 class MisaRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
     public function rules(): array
     {
         return [
@@ -29,72 +22,115 @@ class MisaRequest extends FormRequest
             'hora'          => 'required|date_format:H:i',
             'tipo_misa'     => 'required|string|max:100',
             'intencion'     => 'nullable|string|max:500',
+            'lugar'         => 'required|string|max:255',
+            'latitud'       => 'nullable|numeric|between:-90,90',
+            'longitud'      => 'nullable|numeric|between:-180,180',
             'id_sacerdote'  => 'nullable|exists:sacerdotes,id_sacerdote',
             'observaciones' => 'nullable|string|max:1000',
             'estado'        => 'required|in:programada,celebrada,cancelada',
+
+            // Fiel solicitante
+            'fiel_nombres'          => 'required|string|max:150',
+            'fiel_apellido_paterno' => 'required|string|max:150',
+            'fiel_apellido_materno' => 'required|string|max:150',
+            'fiel_correo'           => 'required|email|max:150',
+            'fiel_telefono'         => 'required|string|max:50',
         ];
     }
 
-    /**
-     * Configure the validator instance.
-     */
     public function withValidator(Validator $validator): void
-    {
-        $validator->after(function (Validator $validator) {
-            $tipoKey = strtoupper(trim($this->input('tipo_misa')));
+{
+    $validator->after(function (Validator $validator) {
+        $tipoKey = strtoupper(trim($this->input('tipo_misa')));
+        $fecha = $this->input('fecha');
+        $hora = $this->input('hora');
+        $lat = floatval($this->input('latitud'));
+        $lng = floatval($this->input('longitud'));
+        $sacerdoteId = $this->input('id_sacerdote');
 
-            // Si es misa comunitaria, omitimos validación de choque
-            if ($tipoKey === 'MISA DE DIFUNTOS COMUNITARIAS') {
-                return;
+        $latParroquia = -16.513202;
+        $lngParroquia = -68.130000;
+        $toleranciaCoord = 0.001;
+        $toleranciaTiempo = 60; // en minutos
+        $idMisaActual = $this->route('misa') ? $this->route('misa')->id_misa : null;
+
+        // Si es misa comunitaria, se permiten choques
+        if ($tipoKey === 'MISA DE DIFUNTOS COMUNITARIAS') {
+            return;
+        }
+
+        // Verificar si ya hay sacramentos en ese horario
+        $sacramentoConflict = Sacramento::where('fecha', $fecha)
+            ->where('hora', $hora)
+            ->exists();
+
+        // Verificar si hay misa ya en ese horario (excepto la misma si estamos editando)
+        $misaConflict = Misa::where('fecha', $fecha)
+            ->where('hora', $hora)
+            ->when($idMisaActual, fn($q) => $q->where('id_misa', '!=', $idMisaActual))
+            ->exists();
+
+        if ($misaConflict || $sacramentoConflict) {
+            $validator->errors()->add('hora', 'Ya existe otra celebración (misa o sacramento) programada el '
+                . Carbon::parse($fecha)->format('d/m/Y') . ' a las ' . $hora . '.');
+        }
+
+        // Determinar si la misa es en la parroquia
+        $esParroquia = abs($lat - $latParroquia) < $toleranciaCoord && abs($lng - $lngParroquia) < $toleranciaCoord;
+
+        // Restricción parroquia: no puede haber dos misas a la misma hora
+        if ($esParroquia) {
+            $parroquiaConflict = Misa::where('fecha', $fecha)
+                ->where('hora', $hora)
+                ->whereRaw('ABS(latitud - ?) < ? AND ABS(longitud - ?) < ?', [$latParroquia, $toleranciaCoord, $lngParroquia, $toleranciaCoord])
+                ->when($idMisaActual, fn($q) => $q->where('id_misa', '!=', $idMisaActual))
+                ->exists();
+
+            if ($parroquiaConflict) {
+                $validator->errors()->add('hora', 'Ya hay una misa en la parroquia programada para ese horario.');
+            }
+        }
+
+        // Restricción domicilio: el sacerdote no debe tener misas ±1h
+        else {
+            $conflictoSacerdote = Misa::where('fecha', $fecha)
+                ->where('id_sacerdote', $sacerdoteId)
+                ->whereRaw("ABS(TIMESTAMPDIFF(MINUTE, hora, ?)) < ?", [$hora, $toleranciaTiempo])
+                ->when($idMisaActual, fn($q) => $q->where('id_misa', '!=', $idMisaActual))
+                ->exists();
+
+            if ($conflictoSacerdote) {
+                $validator->errors()->add('id_sacerdote', 'El sacerdote ya tiene otra misa cerca de ese horario.');
             }
 
-            $fecha = $this->input('fecha');
-            $hora  = $this->input('hora');
+            // Verificar si hay suficientes sacerdotes disponibles
+            $totalSacerdotes = \App\Models\Sacerdote::count();
+            $ocupados = Misa::where('fecha', $fecha)
+                ->whereRaw("ABS(TIMESTAMPDIFF(MINUTE, hora, ?)) < ?", [$hora, $toleranciaTiempo])
+                ->distinct('id_sacerdote')
+                ->count('id_sacerdote');
 
-            // Verificar solapamiento con otra misa (excluye la actual en update)
-            $misaQuery = Misa::where('fecha', $fecha)
-                             ->where('hora', $hora);
-
-            if ($this->route('misa')) {
-                $misaQuery->where('id_misa', '!=', $this->route('misa')->id_misa);
+            if ($ocupados >= $totalSacerdotes) {
+                $validator->errors()->add('id_sacerdote', 'No hay sacerdotes disponibles para este horario.');
             }
+        }
+    });
+}
 
-            $conflictoMisa = $misaQuery->exists();
 
-            // Verificar solapamiento con sacramento
-            $conflictoSac = Sacramento::where('fecha', $fecha)
-                                      ->where('hora', $hora)
-                                      ->exists();
-
-            if ($conflictoMisa || $conflictoSac) {
-                $validator->errors()->add(
-                    'hora',
-                    'Ya existe otra celebración (misa o sacramento) programada el '
-                    . Carbon::parse($fecha)->format('d/m/Y')
-                    . ' a las ' . $hora . '.'
-                );
-            }
-        });
-    }
-
-    /**
-     * Custom error messages.
-     */
     public function messages(): array
     {
         return [
-            'fecha.required'            => 'La fecha de la misa es obligatoria.',
-            'fecha.date'                => 'La fecha debe tener un formato válido (YYYY-MM-DD).',
-            'fecha.after_or_equal'      => 'La fecha no puede ser anterior a hoy.',
-            'hora.required'             => 'La hora de la misa es obligatoria.',
-            'hora.date_format'          => 'La hora debe tener el formato HH:MM (ej. 14:30).',
-            'tipo_misa.required'        => 'El tipo de misa es obligatorio.',
-            'tipo_misa.max'             => 'El tipo de misa no puede exceder los 100 caracteres.',
-            'intencion.max'             => 'La intención no puede exceder los 500 caracteres.',
-            'id_sacerdote.exists'       => 'El sacerdote seleccionado no existe.',
-            'observaciones.max'         => 'Las observaciones no pueden exceder los 1000 caracteres.',
-            'estado.required'           => 'El estado de la misa es obligatorio.',
-            'estado.in'                 => 'El estado debe ser "programada", "celebrada" o "cancelada".',
+            'fecha.required'       => 'La fecha de la misa es obligatoria.',
+            'hora.required'        => 'La hora de la misa es obligatoria.',
+            'tipo_misa.required'   => 'El tipo de misa es obligatorio.',
+            'lugar.required'       => 'El lugar de la misa es obligatorio.',
+            'fiel_nombres.required' => 'El nombre del solicitante es obligatorio.',
+            'fiel_apellido_paterno.required' => 'El apellido paterno es obligatorio.',
+            'fiel_apellido_materno.required' => 'El apellido materno es obligatorio.',
+            'fiel_correo.required' => 'El correo electrónico del solicitante es obligatorio.',
+            'fiel_telefono.required' => 'El teléfono del solicitante es obligatorio.',
+            'fecha.date'           => 'La fecha debe ser una fecha válida.',
         ];
     }
 }

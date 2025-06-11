@@ -12,6 +12,9 @@ class Misa extends Model
     protected $fillable = [
         'fecha',
         'hora',
+        'lugar',
+        'latitud',
+        'longitud',
         'tipo_misa',
         'intencion',
         'id_sacerdote',
@@ -20,6 +23,7 @@ class Misa extends Model
         'estipendio',
         'estado',
     ];
+
 
     public function sacerdote()
     {
@@ -30,4 +34,10 @@ class Misa extends Model
     {
         return $this->belongsTo(Usuario::class, 'id_secretario');
     }
+
+    public function creyente()
+    {
+        return $this->hasOne(Fiel::class, 'id_misa')->where('tipo_fiel', 'creyente');
+    }
+
 }

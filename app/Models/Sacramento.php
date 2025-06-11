@@ -14,7 +14,7 @@ class Sacramento extends Model {
 
     protected $fillable = [
         'tipo_sacramento', 'fecha', 'hora', 'lugar', 'iglesia', 'nombre_receptor',
-        'apellido_paterno', 'apellido_materno', 'fecha_nacimiento', 'sexo', 'id_usuario_registro'
+        'apellido_paterno', 'apellido_materno', 'id_usuario_registro'
     ];
 
     public function fieles() {
