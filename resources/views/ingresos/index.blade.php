@@ -3,9 +3,16 @@
 @section('title', 'Lista de Ingresos')
 
 @section('content')
-  <div class="flex justify-between mb-4">
-    <h2 class="text-xl font-bold text-[#C1440E]">Ingresos registrados</h2>
-    <a href="{{ route('ingresos.create') }}" class="bg-[#E9A209] text-white px-4 py-2 rounded hover:bg-[#c98b07] transition">
+  <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+    <div class="flex items-center gap-4">
+      <h2 class="text-xl font-bold text-[#C1440E]">Ingresos registrados</h2>
+      <a href="{{ route('finanzas.index') }}"
+         class="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition">
+        ← Volver a Finanzas
+      </a>
+    </div>
+    <a href="{{ route('ingresos.create') }}"
+       class="bg-[#E9A209] text-white px-4 py-2 rounded hover:bg-[#c98b07] transition">
       Nuevo ingreso
     </a>
   </div>
@@ -48,9 +55,4 @@
       </tbody>
     </table>
   @endif
-
-  <!-- Botón Volver a Finanzas -->
-  <div class="mt-4">
-    <a href="{{ route('finanzas.index') }}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 transition">Volver a Finanzas</a>
-  </div>
 @endsection

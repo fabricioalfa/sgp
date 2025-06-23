@@ -91,10 +91,16 @@
       Iniciar sesión
     </button>
 
-    <div class="text-right">
+    {{-- Enlaces adicionales --}}
+    <div class="flex justify-between items-center text-sm pt-2">
       <a href="{{ route('password.request') }}"
-         class="text-sm text-[#C1440E] hover:underline">
+         class="text-[#C1440E] hover:underline">
         ¿Olvidaste tu contraseña?
+      </a>
+
+      <a href="{{ route('portal') }}"
+         class="inline-block text-[#C1440E] border border-transparent px-3 py-1 rounded hover:bg-[#f9e5dd] transition">
+        ← Volver al portal
       </a>
     </div>
   </form>

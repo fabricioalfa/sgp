@@ -20,22 +20,24 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Middleware\CheckSession;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\BackupController;
-USE App\Http\Controllers\LogController;
+use App\Http\Controllers\LogController;
 
-Route::get('/', [AuthController::class, 'showLogin']);
+// ✅ Rutas públicas
+Route::get('/', [ActividadController::class, 'portal'])->name('portal');
+Route::get('/actividad/{actividad}', [ActividadController::class, 'mostrarPublico'])->name('actividades.public.show');
+
+// Autenticación personalizada
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware([CheckSession::class])->group(function () {
-    // Panel y perfil: accesible a ambos roles
     Route::get('/panel', [PanelController::class, 'index'])->name('panel');
     Route::get('/perfil/editar', [PerfilController::class, 'editar'])->name('perfil.editar');
     Route::post('/perfil/actualizar', [PerfilController::class, 'actualizar'])->name('perfil.actualizar');
     Route::get('/perfil/cambiar-contraseña', [PanelController::class, 'showChangePassword'])->name('perfil.cambiar-contrasena');
     Route::post('/perfil/cambiar-contraseña', [PanelController::class, 'updatePassword'])->name('perfil.cambiar-contrasena.update');
 
-    // Módulos comunes: secretario y administrador pueden acceder
     Route::resource('sacerdotes', SacerdoteController::class);
     Route::resource('cebs', CebController::class);
     Route::resource('misas', MisaController::class);
@@ -44,13 +46,10 @@ Route::middleware([CheckSession::class])->group(function () {
     Route::get('sacramentos/{sacramento}/fieles', [SacramentoController::class, 'fielesForm'])->name('sacramentos.fieles');
     Route::post('sacramentos/{sacramento}/fieles', [SacramentoController::class, 'storeFieles'])->name('sacramentos.fieles.store');
     Route::get('sacramentos/{sacramento}/recibo', [SacramentoController::class, 'mostrarRecibo'])->name('sacramentos.recibo');
-    Route::get('sacramentos/{sacramento}/familiares', [SacramentoController::class, 'formFamiliares'])
-     ->name('sacramentos.familiares.create');
-    Route::post('sacramentos/{sacramento}/familiares', [SacramentoController::class, 'storeFamiliares'])
-     ->name('sacramentos.familiares.store');
+    Route::get('sacramentos/{sacramento}/familiares', [SacramentoController::class, 'formFamiliares'])->name('sacramentos.familiares.create');
+    Route::post('sacramentos/{sacramento}/familiares', [SacramentoController::class, 'storeFamiliares'])->name('sacramentos.familiares.store');
     Route::get('/sacramentos/{sacramento}/familiares/edit', [SacramentoController::class, 'editFamiliares'])->name('sacramentos.familiares.edit');
     Route::put('sacramentos/{sacramento}/familiares', [SacramentoController::class, 'updateFamiliares'])->name('sacramentos.familiares.update');
-
 
     Route::resource('actividades', ActividadController::class)->parameters(['actividades' => 'actividad']);
     Route::resource('certificados', CertificadoController::class)->only(['index','create','store']);
@@ -62,44 +61,21 @@ Route::middleware([CheckSession::class])->group(function () {
     Route::resource('egresos', EgresoController::class);
     Route::get('egresos/informe', [EgresoController::class, 'generarInforme'])->name('egresos.informe');
 
-    // Módulos exclusivos de administrador
     Route::middleware([AdminMiddleware::class])->group(function () {
         Route::resource('usuarios', UsuarioController::class);
         Route::resource('rrhh', RrhhController::class);
         Route::get('estadisticas', [EstadisticaController::class, 'index'])->name('estadisticas.index');
-        Route::get('reportes', [App\Http\Controllers\LogController::class,'index'])
-         ->name('reportes.index');
-        
-        // Rutas para backups
-        // 1) Listar backups
-        Route::get('/backups', [BackupController::class, 'index'])
-            ->name('backups.index');
+        Route::get('reportes', [LogController::class,'index'])->name('reportes.index');
 
-        // 2) Crear un nuevo backup
-        Route::post('/backups/run', [BackupController::class, 'run'])
-            ->name('backups.run');
-
-        // 3) Descargar un backup
-        Route::get('/backups/download/{filename}', [BackupController::class, 'download'])
-            ->where('filename', '.*')
-            ->name('backups.download');
-
-        // 4) Eliminar un backup
-        Route::delete('/backups/{filename}', [BackupController::class, 'destroy'])
-            ->where('filename', '.*')
-            ->name('backups.destroy');
-        });
+        Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+        Route::post('/backups/run', [BackupController::class, 'run'])->name('backups.run');
+        Route::get('/backups/download/{filename}', [BackupController::class, 'download'])->where('filename', '.*')->name('backups.download');
+        Route::delete('/backups/{filename}', [BackupController::class, 'destroy'])->where('filename', '.*')->name('backups.destroy');
+    });
 });
 
 // Recuperación de contraseña
-// Solicitar link
-Route::get('/password/solicitar',   [PasswordResetController::class, 'showRequestForm'])
-     ->name('password.request');
-Route::post('/password/solicitar',  [PasswordResetController::class, 'sendResetLink'])
-     ->name('password.send');
-
-// Restablecer
-Route::get('/password/restablecer', [PasswordResetController::class, 'showResetForm'])
-     ->name('password.reset');
-Route::post('/password/restablecer',[PasswordResetController::class, 'updatePassword'])
-     ->name('password.update');
+Route::get('/password/solicitar',   [PasswordResetController::class, 'showRequestForm'])->name('password.request');
+Route::post('/password/solicitar',  [PasswordResetController::class, 'sendResetLink'])->name('password.send');
+Route::get('/password/restablecer', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/restablecer',[PasswordResetController::class, 'updatePassword'])->name('password.update');
