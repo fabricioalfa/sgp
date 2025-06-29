@@ -27,7 +27,7 @@
     <div>
       <label class="block text-sm font-semibold">Tipo de ingreso</label>
       <select name="tipo_ingreso" class="w-full border px-3 py-2 rounded" required>
-        @foreach(['donación', 'misa', 'sacramento', 'otro'] as $tipo)
+        @foreach(['donación', 'otro'] as $tipo)
           <option value="{{ $tipo }}" {{ old('tipo_ingreso', $ingreso->tipo_ingreso) == $tipo ? 'selected' : '' }}>
             {{ ucfirst($tipo) }}
           </option>

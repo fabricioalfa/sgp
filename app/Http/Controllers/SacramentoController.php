@@ -106,27 +106,10 @@ class SacramentoController extends Controller
         $sacramento->fieles()->delete();
 
         foreach ($validated['fieles'] as $fiel) {
-            $sacramento->fieles()->create([
-                'nombres'            => $fiel['nombres'],
-                'apellido_paterno'  => $fiel['apellido_paterno'] ?? null,
-                'apellido_materno'  => $fiel['apellido_materno'] ?? null,
-                'correo_electronico'=> $fiel['correo_electronico'] ?? null,
-                'telefono'          => $fiel['telefono'] ?? null,
-                'tipo_fiel'         => $fiel['tipo_fiel'],
-            ]);
+            $sacramento->fieles()->create($fiel);
         }
 
-        $certificados = $request->file('certificados', []);
-        $observado = false;
-
-        if (!empty($certificados)) {
-            foreach ($certificados as $key => $archivo) {
-                if (!$archivo || !$archivo->isValid()) {
-                    $observado = true;
-                }
-            }
-        }
-
+        // Validación de certificados por checkbox
         $tiposRequierenCert = [
             'comunion'     => ['bautizo'],
             'confirmacion' => ['bautizo', 'comunion'],
@@ -134,17 +117,13 @@ class SacramentoController extends Controller
         ];
 
         $esperados = $tiposRequierenCert[$sacramento->tipo_sacramento] ?? [];
-        foreach ($esperados as $cert) {
-            if (!isset($certificados[$cert])) {
-                $observado = true;
-            }
-        }
+        $verificados = collect($request->input('verificado_cert', []))->keys()->all();
+        $faltantes = array_diff($esperados, $verificados);
 
-        if ($observado) {
-            $sacramento->observado = true;
-            $sacramento->save();
-        }
-    }
+        $sacramento->observado = count($faltantes) > 0;
+        $sacramento->save();
+    } 
+
 
     public function mostrarRecibo(Sacramento $sacramento)
     {
